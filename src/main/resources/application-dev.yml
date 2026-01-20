@@ -4,9 +4,9 @@ server:
 spring:
 
     datasource:
-      url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://aws-1-ap-southeast-1.pooler.supabase.com:5432/postgres}
-      username: ${SPRING_DATASOURCE_USERNAME:postgres.anizzqfagauccrkbcssy}
-      password: ${SPRING_DATASOURCE_PASSWORD:!Ducanh123456@}
+      url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/OnlineLMS}
+      username: ${SPRING_DATASOURCE_USERNAME:postgres}
+      password: ${SPRING_DATASOURCE_PASSWORD:123456}
       driver-class-name: org.postgresql.Driver
 
     jpa:

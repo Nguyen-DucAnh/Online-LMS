@@ -14,7 +14,7 @@ import java.util.List;
 @Builder
 public class ChapterDTO {
 
-    private Integer id;
+    private Long id;
 
     @NotBlank(message = "Tên chương không được để trống")
     @Size(max = 255, message = "Tên chương không quá 255 ký tự")
@@ -22,9 +22,9 @@ public class ChapterDTO {
 
     private String description;
 
-    private Integer orderIndex;
+    private Long orderIndex;
 
-    private Integer courseId;
+    private Long courseId;
 
     @Builder.Default
     private List<LessonDTO> lessons = new ArrayList<>();

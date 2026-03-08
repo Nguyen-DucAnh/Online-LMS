@@ -9,10 +9,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ChapterRepository extends JpaRepository<Chapter, Integer> {
+public interface ChapterRepository extends JpaRepository<Chapter, Long> {
 
     @Query("SELECT ch FROM Chapter ch LEFT JOIN FETCH ch.lessons l WHERE ch.course.id = :courseId ORDER BY ch.orderIndex ASC")
-    List<Chapter> findByCourseIdWithLessons(@Param("courseId") int courseId);
+    List<Chapter> findByCourseIdWithLessons(@Param("courseId") Long courseId);
 
-    int countByCourseId(int courseId);
+    Long countByCourseId(Long courseId);
 }

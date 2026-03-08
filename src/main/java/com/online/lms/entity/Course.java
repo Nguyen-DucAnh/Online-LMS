@@ -1,7 +1,7 @@
 package com.online.lms.entity;
 
-import com.online.lms.entity.enums.CourseLevel;
-import com.online.lms.entity.enums.CourseStatus;
+import com.online.lms.enums.CourseLevel;
+import com.online.lms.enums.CourseStatus;
 import jakarta.persistence.*;
 import lombok.*;
 

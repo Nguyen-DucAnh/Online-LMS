@@ -1,6 +1,7 @@
 package com.online.lms.dto.chapter;
 
-import com.online.lms.entity.enums.LessonType;
+
+import com.online.lms.enums.LessonType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -12,7 +13,7 @@ import lombok.*;
 @Builder
 public class LessonDTO {
 
-    private Integer id;
+    private Long id;
 
     @NotBlank(message = "Tên bài học không được để trống")
     @Size(max = 255, message = "Tên bài học không quá 255 ký tự")
@@ -28,5 +29,5 @@ public class LessonDTO {
 
     private Integer orderIndex;
 
-    private Integer chapterId;
+    private Long chapterId;
 }

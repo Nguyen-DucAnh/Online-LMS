@@ -1,4 +1,4 @@
-package com.online.lms.entity.enums;
+package com.online.lms.enums;
 
 public enum CourseStatus {
     PUBLISHED, UNPUBLISHED

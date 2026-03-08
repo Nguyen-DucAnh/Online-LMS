@@ -23,7 +23,7 @@ public class Chapter extends BaseEntity {
 
     @Column(name = "order_index")
     @Builder.Default
-    private Integer orderIndex = 0;
+    private Long orderIndex = 0L;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)

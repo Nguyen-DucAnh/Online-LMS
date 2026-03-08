@@ -1,7 +1,9 @@
 package com.online.lms.entity;
 
-import com.online.lms.entity.enums.UserRole;
-import com.online.lms.entity.enums.UserStatus;
+
+
+import com.online.lms.enums.UserRole;
+import com.online.lms.enums.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "\"user\"")
+@Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,6 +27,12 @@ public class User extends BaseEntity {
 
     @Column(name = "password", nullable = false)
     private String password;
+
+    @Column(name = "PhoneNumber")
+    private String phone;
+
+    @Column(name = "Address", length = 255)
+    private String address;
 
     @Column(name = "avatar", length = 500)
     private String avatar;
@@ -42,4 +50,11 @@ public class User extends BaseEntity {
     @OneToMany(mappedBy = "instructor", fetch = FetchType.LAZY)
     @Builder.Default
     private List<Course> instructedCourses = new ArrayList<>();
+
+    @Column(name = "Otp")
+    private String otp;
+
+    @Column(name = "OtpExpiry")
+    private java.time.LocalDateTime otpExpiry;
+
 }

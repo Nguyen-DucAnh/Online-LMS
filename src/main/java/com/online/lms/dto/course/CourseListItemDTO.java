@@ -1,7 +1,8 @@
 package com.online.lms.dto.course;
 
-import com.online.lms.entity.enums.CourseLevel;
-import com.online.lms.entity.enums.CourseStatus;
+
+import com.online.lms.enums.CourseLevel;
+import com.online.lms.enums.CourseStatus;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 public class CourseListItemDTO {
 
-    private int id;
+    private Long id;
     private String title;
     private String thumbnail;
     private String categoryName;

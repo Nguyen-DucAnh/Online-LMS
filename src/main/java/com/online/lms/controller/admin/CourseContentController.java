@@ -3,7 +3,7 @@ package com.online.lms.controller.admin;
 import com.online.lms.constant.CourseViewNames;
 import com.online.lms.dto.chapter.ChapterDTO;
 import com.online.lms.dto.chapter.LessonDTO;
-import com.online.lms.entity.enums.LessonType;
+import com.online.lms.enums.LessonType;
 import com.online.lms.service.CourseContentService;
 import com.online.lms.service.CourseService;
 import lombok.RequiredArgsConstructor;
@@ -27,7 +27,7 @@ public class CourseContentController {
     private final CourseContentService contentService;
 
     @GetMapping("/content")
-    public String content(@PathVariable int courseId, Model model) {
+    public String content(@PathVariable Long courseId, Model model) {
         model.addAttribute("course", courseService.findById(courseId));
         model.addAttribute("chapters", contentService.findChaptersByCourse(courseId));
         model.addAttribute("newChapter", ChapterDTO.builder().courseId(courseId).build());
@@ -38,7 +38,7 @@ public class CourseContentController {
     }
 
     @PostMapping("/chapters/save")
-    public String saveChapter(@PathVariable int courseId,
+    public String saveChapter(@PathVariable Long courseId,
                               @ModelAttribute ChapterDTO dto,
                               RedirectAttributes ra) {
         dto.setCourseId(courseId);
@@ -48,8 +48,8 @@ public class CourseContentController {
     }
 
     @PostMapping("/chapters/{chapterId}/delete")
-    public String deleteChapter(@PathVariable int courseId,
-                                @PathVariable int chapterId,
+    public String deleteChapter(@PathVariable Long courseId,
+                                @PathVariable Long chapterId,
                                 RedirectAttributes ra) {
         contentService.deleteChapter(chapterId);
         ra.addFlashAttribute("successMessage", "Đã xóa chương!");
@@ -57,8 +57,8 @@ public class CourseContentController {
     }
 
     @PostMapping("/chapters/{chapterId}/lessons/save")
-    public String saveLesson(@PathVariable int courseId,
-                             @PathVariable int chapterId,
+    public String saveLesson(@PathVariable Long courseId,
+                             @PathVariable Long chapterId,
                              @ModelAttribute LessonDTO dto,
                              RedirectAttributes ra) {
         dto.setChapterId(chapterId);
@@ -68,17 +68,17 @@ public class CourseContentController {
     }
 
     @PostMapping("/chapters/{chapterId}/lessons/{lessonId}/toggle")
-    public String toggleLesson(@PathVariable int courseId,
-                               @PathVariable int chapterId,
-                               @PathVariable int lessonId) {
+    public String toggleLesson(@PathVariable Long courseId,
+                               @PathVariable Long chapterId,
+                               @PathVariable Long lessonId) {
         contentService.toggleLessonStatus(lessonId);
         return "redirect:/admin/courses/" + courseId + "/content";
     }
 
     @PostMapping("/chapters/{chapterId}/lessons/{lessonId}/delete")
-    public String deleteLesson(@PathVariable int courseId,
-                               @PathVariable int chapterId,
-                               @PathVariable int lessonId,
+    public String deleteLesson(@PathVariable Long courseId,
+                               @PathVariable Long chapterId,
+                               @PathVariable Long lessonId,
                                RedirectAttributes ra) {
         contentService.deleteLesson(lessonId);
         ra.addFlashAttribute("successMessage", "Đã xóa bài học!");

@@ -1,6 +1,6 @@
 package com.online.lms.entity;
 
-import com.online.lms.entity.enums.LessonType;
+import com.online.lms.enums.LessonType;
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -1,7 +1,7 @@
 package com.online.lms.dto.course;
 
-import com.online.lms.entity.enums.CourseLevel;
-import com.online.lms.entity.enums.CourseStatus;
+import com.online.lms.enums.CourseLevel;
+import com.online.lms.enums.CourseStatus;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 @Builder
 public class CourseFormDTO {
 
-    private Integer id;
+    private Long id;
 
     @NotBlank(message = "Tên khóa học không được để trống")
     @Size(max = 255, message = "Tên không quá 255 ký tự")
@@ -28,9 +28,9 @@ public class CourseFormDTO {
     private String thumbnail;
 
     @NotNull(message = "Vui lòng chọn danh mục")
-    private Integer categoryId;
+    private Long categoryId;
 
-    private Integer instructorId;
+    private Long instructorId;
 
     private CourseLevel level;
 

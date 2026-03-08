@@ -7,15 +7,15 @@ import java.util.List;
 
 public interface CourseContentService {
 
-    List<ChapterDTO> findChaptersByCourse(int courseId);
+    List<ChapterDTO> findChaptersByCourse(Long courseId);
 
     void saveChapter(ChapterDTO dto);
 
-    void deleteChapter(int chapterId);
+    void deleteChapter(Long chapterId);
 
     void saveLesson(LessonDTO dto);
 
-    void toggleLessonStatus(int lessonId);
+    void toggleLessonStatus(Long lessonId);
 
-    void deleteLesson(int lessonId);
+    void deleteLesson(Long lessonId);
 }

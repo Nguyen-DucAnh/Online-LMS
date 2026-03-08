@@ -31,7 +31,7 @@ public class CourseContentServiceImpl implements CourseContentService {
     private final CourseRepository courseRepository;
 
     @Override
-    public List<ChapterDTO> findChaptersByCourse(int courseId) {
+    public List<ChapterDTO> findChaptersByCourse(Long courseId) {
         return chapterRepository.findByCourseIdWithLessons(courseId)
                 .stream().map(CourseMapper::toChapterDTO).toList();
     }
@@ -60,7 +60,7 @@ public class CourseContentServiceImpl implements CourseContentService {
 
     @Override
     @Transactional
-    public void deleteChapter(int chapterId) {
+    public void deleteChapter(Long chapterId) {
         chapterRepository.delete(getChapterOrThrow(chapterId));
         log.info("Chapter deleted: id={}", chapterId);
     }
@@ -94,7 +94,7 @@ public class CourseContentServiceImpl implements CourseContentService {
 
     @Override
     @Transactional
-    public void toggleLessonStatus(int lessonId) {
+    public void toggleLessonStatus(Long lessonId) {
         Lesson lesson = getLessonOrThrow(lessonId);
         lesson.setStatus(!lesson.getStatus());
         lessonRepository.save(lesson);
@@ -103,24 +103,24 @@ public class CourseContentServiceImpl implements CourseContentService {
 
     @Override
     @Transactional
-    public void deleteLesson(int lessonId) {
+    public void deleteLesson(Long lessonId) {
         lessonRepository.delete(getLessonOrThrow(lessonId));
         log.info("Lesson deleted: id={}", lessonId);
     }
 
     // ===== Private helpers =====
 
-    private Chapter getChapterOrThrow(int id) {
+    private Chapter getChapterOrThrow(Long id) {
         return chapterRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy chương id=" + id));
     }
 
-    private Lesson getLessonOrThrow(int id) {
+    private Lesson getLessonOrThrow(Long id) {
         return lessonRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy bài học id=" + id));
     }
 
-    private Course getCourseOrThrow(int id) {
+    private Course getCourseOrThrow(Long id) {
         return courseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khóa học id=" + id));
     }

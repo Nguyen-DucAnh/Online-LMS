@@ -2,9 +2,9 @@ package com.online.lms.controller.admin;
 
 import com.online.lms.constant.CourseViewNames;
 import com.online.lms.dto.course.CourseFormDTO;
-import com.online.lms.entity.enums.CourseLevel;
-import com.online.lms.entity.enums.CourseStatus;
-import com.online.lms.entity.enums.UserRole;
+import com.online.lms.enums.CourseLevel;
+import com.online.lms.enums.CourseStatus;
+import com.online.lms.enums.UserRole;
 import com.online.lms.repository.UserRepository;
 import com.online.lms.service.CategoryService;
 import com.online.lms.service.CourseService;
@@ -37,7 +37,7 @@ public class CourseController {
     @GetMapping
     public String list(Model model,
                        @RequestParam(required = false) String keyword,
-                       @RequestParam(required = false) Integer categoryId,
+                       @RequestParam(required = false) Long categoryId,
                        @RequestParam(required = false) String status,
                        @RequestParam(defaultValue = "0") int page,
                        @RequestParam(defaultValue = "10") int size) {
@@ -64,7 +64,7 @@ public class CourseController {
     }
 
     @GetMapping("/{id}/edit")
-    public String showEditForm(@PathVariable int id, Model model) {
+    public String showEditForm(@PathVariable Long id, Model model) {
         model.addAttribute("courseForm", courseService.findFormById(id));
         populateFormModel(model);
         return CourseViewNames.COURSE_FORM;
@@ -84,7 +84,7 @@ public class CourseController {
     }
 
     @PostMapping("/{id}/update")
-    public String update(@PathVariable int id,
+    public String update(@PathVariable Long id,
                          @Valid @ModelAttribute("courseForm") CourseFormDTO dto,
                          BindingResult result, Model model,
                          RedirectAttributes redirectAttributes) {
@@ -98,7 +98,7 @@ public class CourseController {
     }
 
     @PostMapping("/{id}/toggle-status")
-    public String toggleStatus(@PathVariable int id, RedirectAttributes ra) {
+    public String toggleStatus(@PathVariable Long id, RedirectAttributes ra) {
         courseService.toggleStatus(id);
         ra.addFlashAttribute("successMessage", "Đã cập nhật trạng thái khóa học!");
         return "redirect:/admin/courses";
@@ -106,7 +106,7 @@ public class CourseController {
 
     @PostMapping("/{id}/delete")
     @PreAuthorize("hasRole('ADMIN')")
-    public String delete(@PathVariable int id, RedirectAttributes ra) {
+    public String delete(@PathVariable Long id, RedirectAttributes ra) {
         courseService.deleteById(id);
         ra.addFlashAttribute("successMessage", "Đã xóa khóa học!");
         return "redirect:/admin/courses";

@@ -5,7 +5,7 @@ import com.online.lms.dto.course.CourseListItemDTO;
 import com.online.lms.entity.Category;
 import com.online.lms.entity.Course;
 import com.online.lms.entity.User;
-import com.online.lms.entity.enums.CourseStatus;
+import com.online.lms.enums.CourseStatus;
 import com.online.lms.exceptions.ResourceNotFoundException;
 import com.online.lms.repository.CategoryRepository;
 import com.online.lms.repository.CourseRepository;
@@ -32,7 +32,7 @@ public class CourseServiceImpl implements CourseService {
     private final UserRepository userRepository;
 
     @Override
-    public Page<CourseListItemDTO> search(String keyword, Integer categoryId,
+    public Page<CourseListItemDTO> search(String keyword, Long categoryId,
                                           CourseStatus status, Pageable pageable) {
         String kw = (keyword != null && !keyword.isBlank()) ? keyword.trim() : null;
         return courseRepository.search(kw, categoryId, status, pageable)
@@ -40,12 +40,12 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public CourseFormDTO findFormById(int id) {
+    public CourseFormDTO findFormById(Long id) {
         return CourseMapper.toFormDTO(getCourseOrThrow(id));
     }
 
     @Override
-    public Course findById(int id) {
+    public Course findById(Long id) {
         return getCourseOrThrow(id);
     }
 
@@ -71,7 +71,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional
-    public void update(int id, CourseFormDTO dto) {
+    public void update(Long id, CourseFormDTO dto) {
         Course course = getCourseOrThrow(id);
         course.setTitle(dto.getTitle());
         course.setDescription(dto.getDescription());
@@ -92,7 +92,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional
-    public void toggleStatus(int id) {
+    public void toggleStatus(Long id) {
         Course course = getCourseOrThrow(id);
         CourseStatus next = course.getStatus() == CourseStatus.PUBLISHED
                 ? CourseStatus.UNPUBLISHED : CourseStatus.PUBLISHED;
@@ -103,24 +103,24 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional
-    public void deleteById(int id) {
+    public void deleteById(Long id) {
         courseRepository.delete(getCourseOrThrow(id));
         log.info("Course deleted: id={}", id);
     }
 
     // ===== Private helpers =====
 
-    private Course getCourseOrThrow(int id) {
+    private Course getCourseOrThrow(Long id) {
         return courseRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy khóa học id=" + id));
     }
 
-    private Category getCategoryOrThrow(int id) {
+    private Category getCategoryOrThrow(Long id) {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy danh mục id=" + id));
     }
 
-    private User getUserOrThrow(int id) {
+    private User getUserOrThrow(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy người dùng id=" + id));
     }

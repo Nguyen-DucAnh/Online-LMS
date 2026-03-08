@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <title th:text="${courseForm.id != null} ? 'Chỉnh sửa Khóa học | OLMS' : 'Tạo Khóa học | OLMS'">OLMS</title>
+  <th:block th:replace="~{fragments/layout :: commonHead}"></th:block>
+</head>
+<body class="bg-light">
+
+<div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+<!-- ── Topbar ── -->
+<div class="topbar">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0 small">
+      <li class="breadcrumb-item">
+        <a th:href="@{/admin/courses}" class="text-decoration-none text-muted">Khóa học</a>
+      </li>
+      <li class="breadcrumb-item active fw-600"
+          th:text="${courseForm.id != null} ? 'Chỉnh sửa' : 'Tạo mới'">Tạo mới</li>
+    </ol>
+  </nav>
+</div>
+
+<!-- ── Main content ── -->
+<main class="main">
+
+  <!-- Page header -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h4 class="page-title mb-1"
+          th:text="${courseForm.id != null} ? '✏️ Chỉnh sửa Khóa học' : '➕ Tạo Khóa học mới'">
+      </h4>
+      <p class="text-muted small mb-0">Điền đầy đủ thông tin bên dưới và lưu</p>
+    </div>
+    <a th:href="@{/admin/courses}" class="btn btn-outline-secondary">
+      <i class="fas fa-arrow-left me-2"></i>Quay lại danh sách
+    </a>
+  </div>
+
+  <!-- ── Form ── -->
+  <form th:action="${courseForm.id != null}
+                    ? @{/admin/courses/{id}/update(id=${courseForm.id})}
+                    : @{/admin/courses/save}"
+        th:object="${courseForm}"
+        method="post">
+
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <input type="hidden" th:field="*{id}"/>
+
+    <div class="row g-4">
+
+      <!-- ────── LEFT COLUMN ────── -->
+      <div class="col-lg-8">
+
+        <!-- Basic info -->
+        <div class="card p-4 mb-4">
+          <h6 class="fw-700 mb-3 d-flex align-items-center gap-2" style="color:var(--dark);">
+            <i class="fas fa-info-circle" style="color:var(--purple);"></i> Thông tin cơ bản
+          </h6>
+
+          <!-- Title -->
+          <div class="mb-3">
+            <label class="form-label">Tên khóa học <span class="text-danger">*</span></label>
+            <input type="text" class="form-control"
+                   th:field="*{title}"
+                   placeholder="VD: Lập trình Java từ cơ bản đến nâng cao"
+                   th:classappend="${#fields.hasErrors('title')} ? ' is-invalid' : ''"/>
+            <div class="invalid-feedback" th:errors="*{title}"></div>
+          </div>
+
+          <!-- Category + Instructor -->
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Danh mục <span class="text-danger">*</span></label>
+              <select class="form-select" th:field="*{categoryId}"
+                      th:classappend="${#fields.hasErrors('categoryId')} ? ' is-invalid' : ''">
+                <option value="">— Chọn danh mục —</option>
+                <option th:each="cat : ${categories}"
+                        th:value="${cat.id}"
+                        th:text="${cat.name}"></option>
+              </select>
+              <div class="invalid-feedback" th:errors="*{categoryId}"></div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Giảng viên</label>
+              <select class="form-select" th:field="*{instructorId}">
+                <option value="">— Chọn giảng viên —</option>
+                <option th:each="ins : ${instructors}"
+                        th:value="${ins.id}"
+                        th:text="${ins.fullName}"></option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Level + Duration -->
+          <div class="row g-3 mt-1">
+            <div class="col-md-6">
+              <label class="form-label">Trình độ</label>
+              <select class="form-select" th:field="*{level}">
+                <option value="">— Chọn trình độ —</option>
+                <option th:each="lv : ${levels}"
+                        th:value="${lv}"
+                        th:text="${lv.name()}"></option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Thời lượng (phút)</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-clock text-muted"></i></span>
+                <input type="number" class="form-control" th:field="*{duration}"
+                       placeholder="120" min="1"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- Price -->
+          <div class="row g-3 mt-1">
+            <div class="col-md-6">
+              <label class="form-label">Giá niêm yết</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" step="0.01" class="form-control"
+                       th:field="*{listedPrice}" placeholder="0.00" min="0"
+                       th:classappend="${#fields.hasErrors('listedPrice')} ? ' is-invalid' : ''"/>
+                <div class="invalid-feedback" th:errors="*{listedPrice}"></div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Giá khuyến mãi</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input type="number" step="0.01" class="form-control"
+                       th:field="*{salePrice}" placeholder="0.00" min="0"
+                       th:classappend="${#fields.hasErrors('salePrice')} ? ' is-invalid' : ''"/>
+                <div class="invalid-feedback" th:errors="*{salePrice}"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="card p-4">
+          <h6 class="fw-700 mb-3 d-flex align-items-center gap-2" style="color:var(--dark);">
+            <i class="fas fa-align-left" style="color:var(--purple);"></i> Mô tả khóa học
+          </h6>
+          <textarea id="description" th:field="*{description}"
+                    class="form-control" rows="6"
+                    placeholder="Mô tả chi tiết nội dung và những gì học viên sẽ học được..."></textarea>
+        </div>
+      </div>
+
+      <!-- ────── RIGHT COLUMN ────── -->
+      <div class="col-lg-4">
+
+        <!-- Thumbnail -->
+        <div class="card p-4 mb-4">
+          <h6 class="fw-700 mb-3 d-flex align-items-center gap-2" style="color:var(--dark);">
+            <i class="fas fa-image" style="color:var(--purple);"></i> Ảnh bìa (Thumbnail)
+          </h6>
+
+          <!-- Preview existing thumbnail -->
+          <img id="thumbPreview"
+               th:src="${courseForm.thumbnail}"
+               th:style="${courseForm.thumbnail != null and !#strings.isEmpty(courseForm.thumbnail)}
+                           ? 'display:block;' : 'display:none;'"
+               alt="thumbnail preview"/>
+
+          <!-- Placeholder when no image -->
+          <div class="thumb-placeholder"
+               id="thumbPlaceholder"
+               th:style="${courseForm.thumbnail != null and !#strings.isEmpty(courseForm.thumbnail)}
+                           ? 'display:none;' : 'display:flex;'"
+               onclick="document.getElementById('thumbFile').click()">
+            <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i>
+            <span class="small fw-600">Nhấn để tải ảnh lên</span>
+            <span class="text-muted" style="font-size:.72rem;">PNG, JPG · Tối đa 2MB</span>
+          </div>
+
+          <input type="file" id="thumbFile" class="d-none" accept="image/*"
+                 onchange="previewThumb(this)"/>
+
+          <div class="mt-2">
+            <label class="form-label mb-1 small">Hoặc nhập URL ảnh</label>
+            <input type="text" class="form-control" th:field="*{thumbnail}"
+                   placeholder="https://example.com/image.jpg"
+                   oninput="syncThumbUrl(this.value)"/>
+          </div>
+        </div>
+
+        <!-- Status & Flags -->
+        <div class="card p-4 mb-4">
+          <h6 class="fw-700 mb-3 d-flex align-items-center gap-2" style="color:var(--dark);">
+            <i class="fas fa-toggle-on" style="color:var(--purple);"></i> Trạng thái
+          </h6>
+
+          <!-- Only Admin can change publish status -->
+          <div sec:authorize="hasRole('ADMIN')" class="mb-3">
+            <label class="form-label">Trạng thái xuất bản</label>
+            <select class="form-select" th:field="*{status}">
+              <option th:each="s : ${courseStatuses}"
+                      th:value="${s}"
+                      th:text="${s.name()}"></option>
+            </select>
+          </div>
+
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox"
+                   id="featuredCheck" th:field="*{featured}" role="switch"/>
+            <label class="form-check-label fw-600" for="featuredCheck">
+              ⭐ Đánh dấu nổi bật
+            </label>
+            <div class="text-muted small mt-1">Khóa học sẽ được hiển thị ở trang chủ</div>
+          </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="d-grid gap-2">
+          <button type="submit" class="btn btn-purple py-2 fw-700">
+            <i class="fas fa-save me-2"></i>
+            <span th:text="${courseForm.id != null} ? 'Cập nhật khóa học' : 'Tạo khóa học'"></span>
+          </button>
+          <a th:href="@{/admin/courses}" class="btn btn-outline-secondary py-2">
+            <i class="fas fa-times me-2"></i>Hủy
+          </a>
+        </div>
+
+      </div>
+    </div><!-- /row -->
+  </form>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.9.0/dist/summernote-lite.min.js"></script>
+<script>
+  // Rich text editor
+  $('#description').summernote({
+    height: 260,
+    toolbar: [
+      ['style', ['bold', 'italic', 'underline', 'strikethrough']],
+      ['para',  ['ul', 'ol', 'paragraph']],
+      ['insert', ['link']],
+      ['misc',  ['fullscreen', 'codeview']]
+    ],
+    placeholder: 'Mô tả chi tiết nội dung khóa học...'
+  });
+
+  // Preview thumbnail from file input
+  function previewThumb(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('thumbPreview').src = e.target.result;
+        document.getElementById('thumbPreview').style.display = 'block';
+        document.getElementById('thumbPlaceholder').style.display = 'none';
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+
+  // Sync preview when URL is typed manually
+  function syncThumbUrl(url) {
+    const preview = document.getElementById('thumbPreview');
+    const placeholder = document.getElementById('thumbPlaceholder');
+    if (url && url.trim() !== '') {
+      preview.src = url;
+      preview.style.display = 'block';
+      placeholder.style.display = 'none';
+    } else {
+      preview.style.display = 'none';
+      placeholder.style.display = 'flex';
+    }
+  }
+</script>
+</body>
+</html>

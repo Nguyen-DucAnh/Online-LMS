@@ -9,9 +9,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import java.util.Map;
 
-import static com.online.lms.constant.AtributeNameConstant.MESSAGE;
-import static com.online.lms.constant.AtributeNameConstant.STATUS;
-import static com.online.lms.constant.ErrorMessageConstant.*;
+import java.util.Map;
 
 @Component
 public class CustomErrorViewResolver implements ErrorViewResolver {
@@ -24,12 +22,12 @@ public class CustomErrorViewResolver implements ErrorViewResolver {
             Map<String, Object> model) {
 
         return switch (status) {
-            case NOT_FOUND -> new ModelAndView("error/404", Map.of(MESSAGE, MSG_404));
-            case FORBIDDEN -> new ModelAndView("error/403", Map.of(MESSAGE, MSG_403));
-            case INTERNAL_SERVER_ERROR -> new ModelAndView("error/500", Map.of(MESSAGE, MSG_500));
+            case NOT_FOUND -> new ModelAndView("error/404", Map.of("message", "Page not found"));
+            case FORBIDDEN -> new ModelAndView("error/403", Map.of("message", "Access denied"));
+            case INTERNAL_SERVER_ERROR -> new ModelAndView("error/500", Map.of("message", "Internal server error"));
             default -> new ModelAndView("error/generic", Map.of(
-                    MESSAGE, MSG_GENERIC,
-                    STATUS, status.value()
+                    "message", "An unexpected error occurred",
+                    "status", status.value()
             ));
         };
     }

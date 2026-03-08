@@ -33,16 +33,20 @@ public class SecurityConfig {
     private int rememberMeValidity;
 
     @Bean
-    public AuthenticationSuccessHandler  authenticationSuccessHandler() {
+    public AuthenticationSuccessHandler authenticationSuccessHandler() {
         return (request, response, authentication) -> {
             String redirectUrl = "/";
 
-            boolean isAdmin = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-            boolean isUser = authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_USER"));
+            boolean isAdmin = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            boolean isInstructor = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_INSTRUCTOR"));
 
             if (isAdmin) {
                 redirectUrl = "/admin/dashboard";
-            } else if (isUser) {
+            } else if (isInstructor) {
+                redirectUrl = "/instructor/dashboard";
+            } else {
                 redirectUrl = "/";
             }
 
@@ -71,16 +75,14 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("wallet/deposit/webhook")
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/user/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/wishlist/**").hasAnyRole("USER", "ADMIN")
-                        .requestMatchers("/", "/login", "/perform-login", "/register", "/verify-email/**",
+                        .requestMatchers("/instructor/**").hasRole("INSTRUCTOR")
+                        .requestMatchers("/profile/**").authenticated()
+                        .requestMatchers("/", "/login", "/perform-login", "/register",
                                 "/forgot-password", "/reset-password/**", "/verify-otp/**", "/resend-otp",
-                                "/css/**", "/js/**", "/images/**", "/output.css", "/wallet/deposit/webhook",
-                                "/properties/search", "/properties/{id}")
+                                "/css/**", "/js/**", "/images/**", "/output.css")
                         .permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form
@@ -116,11 +118,14 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 
     @Bean
-    public PasswordEncoder passwordEncoder() { return new BCryptPasswordEncoder(); }
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
 
 }

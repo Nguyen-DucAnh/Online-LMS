@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html th:replace="~{fragments/layout :: layout(~{::title}, ~{::section})}">
+
+<head>
+    <title>My Profile</title>
+</head>
+
+<body>
+    <section>
+        <h2>My Profile</h2>
+
+        <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+        <div class="row">
+            <!-- Profile Update -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Update Profile</div>
+                    <div class="card-body">
+                        <form th:action="@{/profile/update}" th:object="${updateProfileRequest}" method="post">
+                            <div class="mb-3">
+                                <label class="form-label">Fullname</label>
+                                <input type="text" class="form-control" th:field="*{fullname}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Phone</label>
+                                <input type="text" class="form-control" th:field="*{phone}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Address</label>
+                                <input type="text" class="form-control" th:field="*{address}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Avatar URL</label>
+                                <input type="text" class="form-control" th:field="*{avatar}">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Info</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Change Password -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">Change Password</div>
+                    <div class="card-body">
+                        <form th:action="@{/profile/change-password}" th:object="${changePasswordRequest}"
+                            method="post">
+                            <div class="mb-3">
+                                <label class="form-label">Current Password</label>
+                                <input type="password" class="form-control" th:field="*{currentPassword}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">New Password</label>
+                                <input type="password" class="form-control" th:field="*{newPassword}">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" th:field="*{confirmPassword}">
+                            </div>
+                            <button type="submit" class="btn btn-warning">Change Password</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

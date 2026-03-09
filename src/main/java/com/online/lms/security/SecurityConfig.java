@@ -39,13 +39,13 @@ public class SecurityConfig {
 
             boolean isAdmin = authentication.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-            boolean isInstructor = authentication.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_INSTRUCTOR"));
+            boolean isManager = authentication.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER"));
 
             if (isAdmin) {
                 redirectUrl = "/admin/dashboard";
-            } else if (isInstructor) {
-                redirectUrl = "/instructor/dashboard";
+            } else if (isManager) {
+                redirectUrl = "/manager/dashboard";
             } else {
                 redirectUrl = "/";
             }
@@ -77,8 +77,9 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/admin/courses", "/admin/courses/**", "/admin/categories", "/admin/categories/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/instructor/**").hasRole("INSTRUCTOR")
+                        .requestMatchers("/manager/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/profile/**").authenticated()
                         .requestMatchers("/", "/login", "/perform-login", "/register",
                                 "/forgot-password", "/reset-password/**", "/verify-otp/**", "/resend-otp",
@@ -90,12 +91,13 @@ public class SecurityConfig {
                         .loginProcessingUrl("/perform-login")
                         .usernameParameter("email")
                         .passwordParameter("password")
+                        .defaultSuccessUrl("/", true)
                         .successHandler(authenticationSuccessHandler())
                         .failureHandler(authenticationFailureHandler())
                         .permitAll())
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout=true")
+                        .logoutSuccessUrl("/?logout=true")
                         .deleteCookies("JSESSIONID", "remember-me")
                         .invalidateHttpSession(true)
                         .clearAuthentication(true)

@@ -19,7 +19,7 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void sendOtpEmail(String to, String otp) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("OLMS System <your-email@gmail.com>");
+        message.setFrom("OLMS System <" + fromEmail + ">");
         message.setTo(to);
         message.setSubject("OLMS - Verification OTP");
         message.setText("Hello,\n\nYour verification code is: " + otp + "\n\nPlease define this code to verify your account.\n\nThank you!");
@@ -29,7 +29,7 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void sendNewPassword(String to, String newPassword) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("OLMS System <your-email@gmail.com>");
+        message.setFrom("OLMS System <" + fromEmail + ">");
         message.setTo(to);
         message.setSubject("OLMS - New Password");
         message.setText("Hello,\n\nYour new password is: " + newPassword + "\n\nPlease login and change your password immediately.\n\nThank you!");

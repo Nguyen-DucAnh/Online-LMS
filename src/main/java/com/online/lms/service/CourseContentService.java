@@ -18,4 +18,6 @@ public interface CourseContentService {
     void toggleLessonStatus(Long lessonId);
 
     void deleteLesson(Long lessonId);
+
+    LessonDTO findLessonById(Long lessonId);
 }

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::section})}">
+
+<head>
+    <title>All Courses | Online LMS</title>
+</head>
+
+<body>
+    <section>
+        <!-- Header -->
+        <div class="bg-dark text-white py-5 mb-5 rounded-4 shadow-lg overflow-hidden position-relative">
+            <div class="container position-relative z-1 py-4">
+                <div class="row align-items-center">
+                    <div class="col-lg-6">
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-3">
+                                <li class="breadcrumb-item"><a href="/"
+                                        class="text-white-50 text-decoration-none small">Home</a></li>
+                                <li class="breadcrumb-item active text-white small" aria-current="page">Courses</li>
+                            </ol>
+                        </nav>
+                        <h1 class="display-4 fw-bold mb-3">Expand Your <span class="text-primary">Skills</span></h1>
+                        <p class="lead text-white-50 mb-0">Discover thousands of courses designed to help you succeed.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="position-absolute top-0 end-0 bg-primary opacity-10 rounded-circle translate-middle mt-n5 me-n5"
+                style="width: 500px; height: 500px; filter: blur(80px);"></div>
+        </div>
+
+        <div class="container">
+            <div class="row g-4">
+                <!-- Sidebar Filters -->
+                <div class="col-lg-3">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 sticky-top" style="top: 100px;">
+                        <h5 class="fw-bold mb-4">Filters</h5>
+
+                        <form th:action="@{/courses}" method="get">
+                            <!-- Search -->
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold small text-uppercase tracking-wider">Search</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white border-end-0 text-muted small"><i
+                                            class="fas fa-search"></i></span>
+                                    <input type="text" name="keyword" th:value="${keyword}"
+                                        class="form-control border-start-0 ps-0 small" placeholder="Course name...">
+                                </div>
+                            </div>
+
+                            <!-- Categories -->
+                            <div class="mb-4">
+                                <label
+                                    class="form-label fw-semibold small text-uppercase tracking-wider">Category</label>
+                                <select name="categoryId" class="form-select small">
+                                    <option value="">All Categories</option>
+                                    <option th:each="cat : ${categories}" th:value="${cat.id}" th:text="${cat.name}"
+                                        th:selected="${cat.id == categoryId}"></option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                            <a href="/courses" class="btn btn-light w-100 mt-2">Clear All</a>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Course Grid -->
+                <div class="col-lg-9">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <p class="text-muted small mb-0"
+                            th:text="${'Showing ' + coursePage.totalElements + ' courses'}">Showing 0 courses</p>
+                        <div class="dropdown">
+                            <button class="btn btn-light btn-sm dropdown-toggle rounded-pill px-3" type="button"
+                                data-bs-toggle="dropdown">
+                                Sort by: Newest
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm">
+                                <li><a class="dropdown-item small" href="#">Newest</a></li>
+                                <li><a class="dropdown-item small" href="#">Price: Low to High</a></li>
+                                <li><a class="dropdown-item small" href="#">Price: High to Low</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="row g-4">
+                        <!-- Course Item -->
+                        <div class="col-md-6 col-xl-4" th:each="course : ${coursePage.content}">
+                            <div class="card border-0 h-100 shadow-sm overflow-hidden">
+                                <div class="position-relative">
+                                    <img th:src="${course.thumbnail ?: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}"
+                                        class="card-img-top" style="height: 180px; object-fit: cover;"
+                                        th:alt="${course.title}">
+                                    <div class="position-absolute top-0 end-0 m-3">
+                                        <span
+                                            class="badge bg-white text-dark shadow-sm px-2 py-1 rounded-pill smaller fw-bold"
+                                            th:text="${course.categoryName}">Category</span>
+                                    </div>
+                                </div>
+                                <div class="card-body p-4 border-top-0">
+                                    <h6 class="card-title fw-bold mb-3 lh-base">
+                                        <a th:href="@{'/courses/' + ${course.id}}"
+                                            class="text-decoration-none text-dark" th:text="${course.title}">Course
+                                            Title</a>
+                                    </h6>
+                                    <div class="d-flex align-items-center mb-3">
+                                        <span class="text-muted smaller"><i class="fas fa-chalkboard-teacher me-1"></i>
+                                            <span th:text="${course.instructorName}">Instructor</span></span>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                                        <span class="fw-bold text-primary"
+                                            th:text="${#numbers.formatCurrency(course.listedPrice)}">$99.00</span>
+                                        <a th:href="@{'/courses/' + ${course.id}}"
+                                            class="btn btn-primary btn-sm px-3 rounded-pill">Enroll</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div class="col-12 text-center py-5" th:if="${coursePage.empty}">
+                            <div class="bg-light d-inline-block p-4 rounded-circle mb-4">
+                                <i class="fas fa-search fa-3x text-muted opacity-50"></i>
+                            </div>
+                            <h4>No courses found.</h4>
+                            <p class="text-muted">Try adjusting your filters or search keywords.</p>
+                        </div>
+                    </div>
+
+                    <!-- Pagination -->
+                    <nav class="mt-5" th:if="${coursePage.totalPages > 1}">
+                        <ul class="pagination justify-content-center">
+                            <li class="page-item" th:classappend="${coursePage.first ? 'disabled' : ''}">
+                                <a class="page-link border-0 shadow-sm mx-1 rounded-3"
+                                    th:href="@{/courses(page=${coursePage.number - 1}, keyword=${keyword}, categoryId=${categoryId})}">
+                                    <i class="fas fa-chevron-left small"></i>
+                                </a>
+                            </li>
+                            <li class="page-item" th:each="i : ${#numbers.sequence(0, coursePage.totalPages - 1)}"
+                                th:classappend="${i == coursePage.number ? 'active' : ''}">
+                                <a class="page-link border-0 shadow-sm mx-1 rounded-3"
+                                    th:href="@{/courses(page=${i}, keyword=${keyword}, categoryId=${categoryId})}"
+                                    th:text="${i + 1}">1</a>
+                            </li>
+                            <li class="page-item" th:classappend="${coursePage.last ? 'disabled' : ''}">
+                                <a class="page-link border-0 shadow-sm mx-1 rounded-3"
+                                    th:href="@{/courses(page=${coursePage.number + 1}, keyword=${keyword}, categoryId=${categoryId})}">
+                                    <i class="fas fa-chevron-right small"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

@@ -57,4 +57,8 @@ public class User extends BaseEntity {
     @Column(name = "OtpExpiry")
     private java.time.LocalDateTime otpExpiry;
 
+    public boolean isDeletable() {
+        return instructedCourses == null || instructedCourses.isEmpty();
+    }
+
 }

@@ -1,0 +1,19 @@
+<div class="container">
+    <h2>Quản lý User</h2>
+    <a th:href="@{/admin/users/new}" class="btn btn-primary">Thêm mới</a>
+
+    <table class="table">
+        <tr th:each="user : ${users}">
+            <td th:text="${user.fullName}"></td>
+            <td>
+                <a th:href="@{/admin/users/edit/{id}(id=${user.id})}" class="btn btn-sm btn-info">Chi tiết/Sửa</a>
+
+                <a th:href="@{/admin/users/toggle/{id}(id=${user.id})}" class="btn btn-sm btn-warning">Kích hoạt/Khóa</a>
+
+                <a th:if="${user.isDeletable()}"
+                   th:href="@{/admin/users/delete/{id}(id=${user.id})}"
+                   class="btn btn-sm btn-danger" onclick="return confirm('Xóa người dùng này?')">Xóa</a>
+            </td>
+        </tr>
+    </table>
+</div>

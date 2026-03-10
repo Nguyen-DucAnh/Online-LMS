@@ -74,8 +74,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
+                .csrf(org.springframework.security.config.Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/admin/courses", "/admin/courses/**", "/admin/categories", "/admin/categories/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -112,9 +111,7 @@ public class SecurityConfig {
                                 org.springframework.security.config.http.SessionCreationPolicy.IF_REQUIRED)
                         .maximumSessions(1)
                         .maxSessionsPreventsLogin(false)
-                        .expiredUrl("/login?expired=true"))
-                .exceptionHandling(ex -> ex
-                        .accessDeniedPage("/error/403"));
+                        .expiredUrl("/login?expired=true"));
 
         return http.build();
     }

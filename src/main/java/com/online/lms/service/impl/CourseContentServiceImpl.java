@@ -108,6 +108,11 @@ public class CourseContentServiceImpl implements CourseContentService {
         log.info("Lesson deleted: id={}", lessonId);
     }
 
+    @Override
+    public LessonDTO findLessonById(Long lessonId) {
+        return CourseMapper.toLessonDTO(getLessonOrThrow(lessonId));
+    }
+
     // ===== Private helpers =====
 
     private Chapter getChapterOrThrow(Long id) {

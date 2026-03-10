@@ -50,6 +50,14 @@ public class AuthController {
         }
     }
 
+    @GetMapping("/verify-otp")
+    public String verifyOtpPage(@RequestParam("email") String email, Model model) {
+        OtpRequestDTO otpRequest = new OtpRequestDTO();
+        otpRequest.setEmail(email);
+        model.addAttribute("otpRequest", otpRequest);
+        return "auth/verify-otp";
+    }
+
     @PostMapping("/verify-otp")
     public String verifyOtp(@Valid @ModelAttribute("otpRequest") OtpRequestDTO request,
             BindingResult result, RedirectAttributes redirectAttributes) {

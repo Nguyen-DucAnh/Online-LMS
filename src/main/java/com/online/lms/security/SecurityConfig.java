@@ -80,7 +80,8 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/instructor/**").hasRole("INSTRUCTOR")
                         .requestMatchers("/profile/**").authenticated()
-                        .requestMatchers("/", "/login", "/perform-login", "/register",
+                        .requestMatchers("/", "/api/**",
+                                "/login", "/perform-login", "/register",
                                 "/forgot-password", "/reset-password/**", "/verify-otp/**", "/resend-otp",
                                 "/css/**", "/js/**", "/images/**", "/output.css")
                         .permitAll()

@@ -1,0 +1,123 @@
+/* General Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* Navbar */
+.navbar-brand {
+    font-size: 1.5rem;
+}
+
+.nav-link {
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover, .nav-link.active {
+    color: #0d6efd !important;
+}
+
+/* Hero Section */
+.hero-section {
+    background-color: #f8f9fa;
+}
+
+.search-bar-hero {
+    max-width: 500px;
+}
+
+.search-bar-hero input:focus {
+    box-shadow: none;
+}
+
+/* Divider */
+.divider {
+    height: 4px;
+    width: 60px;
+    border-radius: 2px;
+    margin-top: 10px;
+}
+
+/* Course Cards */
+.course-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.course-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+}
+
+.course-thumbnail {
+    height: 200px;
+    object-fit: cover;
+    width: 100%;
+}
+
+.course-price {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #0d6efd;
+}
+
+.listed-price {
+    text-decoration: line-through;
+    color: #6c757d;
+    font-size: 0.9rem;
+    margin-right: 8px;
+}
+
+.course-level {
+    font-size: 0.8rem;
+    padding: 3px 8px;
+    border-radius: 12px;
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+/* Feature Cards */
+.feature-card {
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+}
+
+.feature-icon {
+    width: 80px;
+    height: 80px;
+}
+
+/* Statistics Section */
+.statistics-section {
+    background: linear-gradient(135deg, #0d6efd 0%, #0a58ca 100%);
+}
+
+/* Footer */
+.hover-white {
+    transition: color 0.3s ease;
+}
+
+.hover-white:hover {
+    color: #fff !important;
+}
+
+/* Utilities */
+.max-w-700 {
+    max-width: 700px;
+}
+
+/* Pagination */
+.page-link {
+    color: #0d6efd;
+    cursor: pointer;
+}
+
+.page-item.active .page-link {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}

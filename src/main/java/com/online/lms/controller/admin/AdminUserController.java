@@ -1,4 +1,4 @@
-package com.online.lms.controller;
+package com.online.lms.controller.admin;
 
 import com.online.lms.dto.request.user.UserRequestDTO;
 import com.online.lms.entity.User;

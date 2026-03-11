@@ -1,0 +1,68 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------< com.online.lms:Online-Learning-Management-System >----------
+[INFO] Building Online-Learning-Management-System 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ Online-Learning-Management-System ---
+[INFO] Deleting D:\Spring2026\HSF302\Online-Learning-Management-System\target
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ Online-Learning-Management-System ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] Copying 6 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ Online-Learning-Management-System ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 28 source files with javac [debug parameters release 21] to target\classes
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /D:/Spring2026/HSF302/Online-Learning-Management-System/src/main/java/com/online/lms/component/CustomErrorViewResolver.java:[12,38] cannot find symbol
+  symbol:   class AtributeNameConstant
+  location: package com.online.lms.constant
+[ERROR] /D:/Spring2026/HSF302/Online-Learning-Management-System/src/main/java/com/online/lms/component/CustomErrorViewResolver.java:[12,1] static import only from classes and interfaces
+[ERROR] /D:/Spring2026/HSF302/Online-Learning-Management-System/src/main/java/com/online/lms/component/CustomErrorViewResolver.java:[13,38] cannot find symbol
+  symbol:   class AtributeNameConstant
+  location: package com.online.lms.constant
+[ERROR] /D:/Spring2026/HSF302/Online-Learning-Management-System/src/main/java/com/online/lms/component/CustomErrorViewResolver.java:[13,1] static import only from classes and interfaces
+[ERROR] /D:/Spring2026/HSF302/Online-Learning-Management-System/src/main/java/com/online/lms/exceptions/GlobalExceptionHandler.java:[11,38] cannot find symbol
+  symbol:   class AtributeNameConstant
+  location: package com.online.lms.constant
+[ERROR] /D:/Spring2026/HSF302/Online-Learning-Management-System/src/main/java/com/online/lms/exceptions/GlobalExceptionHandler.java:[11,1] static import only from classes and interfaces
+[ERROR] /D:/Spring2026/HSF302/Online-Learning-Management-System/src/main/java/com/online/lms/exceptions/GlobalExceptionHandler.java:[12,38] cannot find symbol
+  symbol:   class ViewNamesConstant
+  location: package com.online.lms.constant
+[ERROR] /D:/Spring2026/HSF302/Online-Learning-Management-System/src/main/java/com/online/lms/exceptions/GlobalExceptionHandler.java:[12,1] static import only from classes and interfaces
+[INFO] 8 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  3.365 s
+[INFO] Finished at: 2026-03-08T15:22:50+07:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:compile (default-compile) on project Online-Learning-Management-System: Compilation failure: Compilation failure: 
+[ERROR] /D:/Spring2026/HSF302/Online-Learning-Management-System/src/main/java/com/online/lms/component/CustomErrorViewResolver.java:[12,38] cannot find symbol
+[ERROR]   symbol:   class AtributeNameConstant
+[ERROR]   location: package com.online.lms.constant
+[ERROR] /D:/Spring2026/HSF302/Online-Learning-Management-System/src/main/java/com/online/lms/component/CustomErrorViewResolver.java:[12,1] static import only from classes and interfaces
+[ERROR] /D:/Spring2026/HSF302/Online-Learning-Management-System/src/main/java/com/online/lms/component/CustomErrorViewResolver.java:[13,38] cannot find symbol
+[ERROR]   symbol:   class AtributeNameConstant
+[ERROR]   location: package com.online.lms.constant
+[ERROR] /D:/Spring2026/HSF302/Online-Learning-Management-System/src/main/java/com/online/lms/component/CustomErrorViewResolver.java:[13,1] static import only from classes and interfaces
+[ERROR] /D:/Spring2026/HSF302/Online-Learning-Management-System/src/main/java/com/online/lms/exceptions/GlobalExceptionHandler.java:[11,38] cannot find symbol
+[ERROR]   symbol:   class AtributeNameConstant
+[ERROR]   location: package com.online.lms.constant
+[ERROR] /D:/Spring2026/HSF302/Online-Learning-Management-System/src/main/java/com/online/lms/exceptions/GlobalExceptionHandler.java:[11,1] static import only from classes and interfaces
+[ERROR] /D:/Spring2026/HSF302/Online-Learning-Management-System/src/main/java/com/online/lms/exceptions/GlobalExceptionHandler.java:[12,38] cannot find symbol
+[ERROR]   symbol:   class ViewNamesConstant
+[ERROR]   location: package com.online.lms.constant
+[ERROR] /D:/Spring2026/HSF302/Online-Learning-Management-System/src/main/java/com/online/lms/exceptions/GlobalExceptionHandler.java:[12,1] static import only from classes and interfaces
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

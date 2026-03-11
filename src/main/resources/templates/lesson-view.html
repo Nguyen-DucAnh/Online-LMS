@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::section})}">
+
+<head>
+    <title th:text="${currentLesson.title + ' | ' + course.title}">Lesson View</title>
+    <style>
+        .lesson-sidebar {
+            height: calc(100vh - 100px);
+            overflow-y: auto;
+            position: sticky;
+            top: 80px;
+        }
+
+        .lesson-content-area {
+            min-height: 60vh;
+        }
+
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            /* 16:9 */
+            height: 0;
+            overflow: hidden;
+            border-radius: var(--radius-lg);
+            background: #000;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .active-lesson {
+            background-color: var(--primary-light) !important;
+            border-left: 4px solid var(--primary) !important;
+            color: var(--primary) !important;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+    <section>
+        <div class="row g-0">
+            <!-- Sidebar Navigation -->
+            <div class="col-lg-3 border-end bg-white">
+                <div class="lesson-sidebar p-0">
+                    <div class="p-4 border-bottom bg-light">
+                        <h6 class="fw-bold mb-1 text-primary">Course Curriculum</h6>
+                        <h5 class="fw-bold mb-0 small" th:text="${course.title}">Course Title</h5>
+                    </div>
+
+                    <div class="accordion accordion-flush" id="lessonAccordion">
+                        <div th:each="chapter, chStat : ${chapters}" class="accordion-item border-0">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button py-3 small fw-bold bg-white text-dark" type="button"
+                                    th:data-bs-target="'#ch-' + ${chapter.id}" data-bs-toggle="collapse"
+                                    th:aria-expanded="${#lists.contains(chapter.lessons.![id], currentLesson.id) ? 'true' : 'false'}"
+                                    th:classappend="${#lists.contains(chapter.lessons.![id], currentLesson.id) ? '' : 'collapsed'}">
+                                    <span th:text="${chapter.title}">Chapter Title</span>
+                                </button>
+                            </h2>
+                            <div th:id="'ch-' + ${chapter.id}" class="accordion-collapse collapse"
+                                th:classappend="${#lists.contains(chapter.lessons.![id], currentLesson.id) ? 'show' : ''}"
+                                data-bs-parent="#lessonAccordion">
+                                <div class="accordion-body p-0">
+                                    <div class="list-group list-group-flush">
+                                        <a th:each="lesson : ${chapter.lessons}"
+                                            th:href="@{/courses/{cId}/lessons/{lId}(cId=${course.id}, lId=${lesson.id})}"
+                                            class="list-group-item list-group-item-action border-0 py-2 px-4 small d-flex align-items-center"
+                                            th:classappend="${lesson.id == currentLesson.id} ? 'active-lesson' : ''">
+                                            <i class="fas fa-play-circle me-3 opacity-50"></i>
+                                            <span th:text="${lesson.title}">Lesson Title</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="col-lg-9 bg-light">
+                <div class="p-4 p-md-5">
+                    <!-- Lesson Header -->
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge bg-primary-light text-primary px-3 py-2 rounded-pill small"
+                                th:text="${currentLesson.type}">VIDEO</span>
+                            <span class="text-muted small"><i class="fas fa-clock me-1"></i> <span
+                                    th:text="${currentLesson.duration + ' mins'}">15 mins</span></span>
+                        </div>
+                        <h2 class="fw-bold display-6 mb-3" th:text="${currentLesson.title}">Lesson Title</h2>
+                    </div>
+
+                    <!-- Video / Content Placeholder -->
+                    <div class="lesson-content-area mb-5">
+                        <!-- If it's a video lesson and has a content link -->
+                        <div th:if="${currentLesson.type.name() == 'VIDEO' and currentLesson.content != null and currentLesson.content.contains('youtube.com')}"
+                            class="video-container shadow-lg mb-4">
+                            <!-- Simple YouTube embed logic -->
+                            <iframe th:src="${currentLesson.content.replace('watch?v=', 'embed/')}" frameborder="0"
+                                allowfullscreen></iframe>
+                        </div>
+
+                        <!-- General Content (Text/HTML) -->
+                        <div class="card border-0 shadow-sm rounded-4">
+                            <div class="card-body p-4 p-md-5">
+                                <div class="lh-lg text-dark"
+                                    th:utext="${currentLesson.content ?: 'This lesson has no textual content. Please follow the instructions provided.'}">
+                                    Lesson content goes here...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Buttons -->
+                    <div class="d-flex justify-content-between align-items-center mt-5">
+                        <a th:href="@{/courses/{id}(id=${course.id})}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i> Back to Course
+                        </a>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary" disabled><i class="fas fa-chevron-left me-2"></i>
+                                Previous</button>
+                            <button class="btn btn-primary">Next Lesson <i
+                                    class="fas fa-chevron-right ms-2"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

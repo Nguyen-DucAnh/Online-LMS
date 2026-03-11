@@ -1,0 +1,25 @@
+package com.online.lms.service;
+
+import com.online.lms.dto.course.CourseFormDTO;
+import com.online.lms.dto.course.CourseListItemDTO;
+import com.online.lms.entity.Course;
+import com.online.lms.enums.CourseStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+public interface CourseService {
+
+    Page<CourseListItemDTO> search(String keyword, Long categoryId, CourseStatus status, Pageable pageable);
+
+    CourseFormDTO findFormById(Long id);
+
+    Course findById(Long id);
+
+    void save(CourseFormDTO dto);
+
+    void update(Long id, CourseFormDTO dto);
+
+    void toggleStatus(Long id);
+
+    void deleteById(Long id);
+}

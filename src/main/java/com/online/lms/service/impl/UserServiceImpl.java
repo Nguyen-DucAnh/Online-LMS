@@ -1,28 +1,31 @@
 package com.online.lms.service.impl;
 
-
-import com.online.lms.dto.UserCreateRequest;
-import com.online.lms.dto.UserUpdateRequest;
+import com.online.lms.dto.request.user.ChangePasswordRequestDTO;
+import com.online.lms.dto.request.user.UpdateProfileRequestDTO;
+import com.online.lms.dto.request.user.UserRequestDTO;
 import com.online.lms.entity.User;
+import com.online.lms.enums.UserRole;
+import com.online.lms.enums.UserStatus;
+import com.online.lms.repository.UserRepository;
 import com.online.lms.service.UserService;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
-
     private final UserRepository userRepository;
-    private final EnrollmentRepository enrollmentRepository;
-    private final PaymentRepository paymentRepository;
     private final PasswordEncoder passwordEncoder;
-    private final EmailService emailService;
+    private final JavaMailSender mailSender;
 
     @Override
     public List<User> getAllUsers() {
@@ -31,56 +34,59 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getUserById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + id));
+        return userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
     }
 
     @Override
     @Transactional
-    public User createUser(UserCreateRequest request) {
-
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email đã tồn tại trong hệ thống!");
+    public void createNewUser(UserRequestDTO dto) {
+        // Validation thủ công thay vì dùng Annotation tại Entity
+        if (userRepository.existsByEmail(dto.getEmail())) {
+            throw new RuntimeException("Email đã tồn tại trên hệ thống!");
         }
 
-
-        String rawPassword = RandomStringUtils.randomAlphanumeric(8);
-
-
-        User newUser = User.builder()
-                .fullName(request.getFullName())
-                .email(request.getEmail())
+        String rawPassword = UUID.randomUUID().toString().substring(0, 8);
+        User user = User.builder()
+                .fullName(dto.getFullName())
+                .email(dto.getEmail())
+                .phone(dto.getPhone())
+                .address(dto.getAddress())
+                .role(UserRole.valueOf(dto.getRole()))
+                .status(UserStatus.ACTIVE) // Đảm bảo Enum UserStatus có ACTIVE
                 .password(passwordEncoder.encode(rawPassword))
-                .role(request.getRole())
-                .isActive(true)
                 .build();
 
-        User savedUser = userRepository.save(newUser);
+        userRepository.save(user);
 
-        emailService.sendAccountCreationEmail(savedUser.getEmail(), savedUser.getFullName(), rawPassword);
-
-        return savedUser;
+        // Gửi mail
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(user.getEmail());
+        message.setSubject("LMS Account Created");
+        message.setText("Mật khẩu của bạn là: " + rawPassword);
+        mailSender.send(message);
     }
 
     @Override
     @Transactional
-    public User updateUser(Long id, UserUpdateRequest request) {
-        User existingUser = getUserById(id);
-
-        existingUser.setFullName(request.getFullName());
-        existingUser.setPhone(request.getPhone());
-        existingUser.setAddress(request.getAddress());
-        existingUser.setRole(request.getRole());
-        existingUser.setActive(request.isActive());
-
-        return userRepository.save(existingUser);
-    }
-
-    @Override
-    @Transactional
-    public void toggleUserStatus(Long id) {
+    public void updateUser(Long id, UserRequestDTO dto) {
         User user = getUserById(id);
-        user.setActive(!user.isActive());
+        user.setFullName(dto.getFullName());
+        user.setPhone(dto.getPhone());
+        user.setAddress(dto.getAddress());
+        user.setRole(UserRole.valueOf(dto.getRole()));
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void toggleStatus(Long id) {
+        User user = getUserById(id);
+        // Kiểm tra đúng giá trị Enum của bạn (Ví dụ: ACTIVE/DEACTIVE)
+        if (user.getStatus() == UserStatus.ACTIVE) {
+            user.setStatus(UserStatus.PENDING);
+        } else {
+            user.setStatus(UserStatus.ACTIVE);
+        }
         userRepository.save(user);
     }
 
@@ -88,15 +94,43 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void deleteUser(Long id) {
         User user = getUserById(id);
-
-
-        boolean hasEnrollments = enrollmentRepository.existsByUserId(id);
-        boolean hasPayments = paymentRepository.existsByUserId(id);
-
-        if (hasEnrollments || hasPayments) {
-            throw new RuntimeException("Không thể xóa! Người dùng này đã có giao dịch (khóa học/thanh toán) trong hệ thống.");
+        // Logic: Chỉ user mới (không có giao dịch/khóa học) mới được xóa
+        if (user.getInstructedCourses() != null && !user.getInstructedCourses().isEmpty()) {
+            throw new RuntimeException("Không thể xóa người dùng đã có dữ liệu khóa học!");
         }
-
         userRepository.delete(user);
+    }
+
+    // --- Giữ nguyên các hàm cũ của bạn ---
+    @Override
+    public User getCurrentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
+    @Override
+    public User getCurrentUserProfile() { return getCurrentUser(); }
+
+    @Override
+    @Transactional
+    public void updateProfile(UpdateProfileRequestDTO request) {
+        User user = getCurrentUser();
+        user.setFullName(request.getFullname());
+        user.setPhone(request.getPhone());
+        user.setAddress(request.getAddress());
+        user.setAvatar(request.getAvatar());
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(ChangePasswordRequestDTO request) {
+        User user = getCurrentUser();
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword()))
+            throw new RuntimeException("Current password is incorrect");
+        if (!request.getNewPassword().equals(request.getConfirmPassword()))
+            throw new RuntimeException("Passwords do not match");
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
     }
 }

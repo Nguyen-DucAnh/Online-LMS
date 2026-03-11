@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::section})}">
+
+<head>
+    <title>Create Account | Online LMS</title>
+</head>
+
+<body>
+    <section>
+        <div class="container">
+            <div class="row justify-content-center py-5">
+                <div class="col-md-8 col-lg-6">
+                    <div class="card border-0 shadow-lg p-4 p-md-5 rounded-4 bg-white">
+                        <div class="text-center mb-5">
+                            <h2 class="display-6 fw-bold mb-2">Create Account</h2>
+                            <p class="text-muted">Sign up to start your learning journey today</p>
+                        </div>
+
+                        <div th:if="${error}" class="alert alert-danger border-0 rounded-3 small mb-4"
+                            th:text="${error}"></div>
+
+                        <form th:action="@{/register}" th:object="${registerRequest}" method="post">
+                            <div class="row g-3">
+                                <div class="col-md-12 mb-2">
+                                    <label class="form-label fw-semibold small text-uppercase tracking-wider">Full
+                                        Name</label>
+                                    <input type="text" th:field="*{fullname}" class="form-control"
+                                        placeholder="John Doe" required>
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('fullname')}"
+                                        th:errors="*{fullname}"></div>
+                                </div>
+
+                                <div class="col-md-6 mb-2">
+                                    <label
+                                        class="form-label fw-semibold small text-uppercase tracking-wider">Email</label>
+                                    <input type="email" th:field="*{email}" class="form-control"
+                                        placeholder="john@example.com" required>
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('email')}"
+                                        th:errors="*{email}"></div>
+                                </div>
+
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label fw-semibold small text-uppercase tracking-wider">Phone
+                                        Number</label>
+                                    <input type="text" th:field="*{phone}" class="form-control" placeholder="+84...">
+                                </div>
+
+                                <div class="col-md-6 mb-2">
+                                    <label
+                                        class="form-label fw-semibold small text-uppercase tracking-wider">Password</label>
+                                    <input type="password" th:field="*{password}" class="form-control"
+                                        placeholder="••••••••" required>
+                                    <div class="text-danger small mt-1" th:if="${#fields.hasErrors('password')}"
+                                        th:errors="*{password}"></div>
+                                </div>
+
+                                <div class="col-md-6 mb-2">
+                                    <label class="form-label fw-semibold small text-uppercase tracking-wider">Confirm
+                                        Password</label>
+                                    <input type="password" th:field="*{confirmPassword}" class="form-control"
+                                        placeholder="••••••••" required>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 mb-4">
+                                <div class="form-check small text-muted">
+                                    <input class="form-check-input" type="checkbox" value="" id="termsCheck" required>
+                                    <label class="form-check-label" for="termsCheck">
+                                        I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> and
+                                        <a href="#" class="text-decoration-none">Privacy Policy</a>.
+                                    </label>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100 py-3 shadow-sm mb-4">Create
+                                Account</button>
+                        </form>
+
+                        <div class="text-center mt-2">
+                            <p class="text-muted small mb-0">Already have an account? <a href="/login"
+                                    class="fw-bold text-decoration-none text-primary">Sign in instead</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

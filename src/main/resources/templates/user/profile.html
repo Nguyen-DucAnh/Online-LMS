@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::section})}">
+
+<head>
+    <title>My Profile | Online LMS</title>
+</head>
+
+<body>
+    <section>
+        <div class="row g-4 pt-4">
+            <!-- Sidebar Info -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm rounded-4 text-center p-4 h-100">
+                    <div class="mb-4">
+                        <div class="bg-primary-light text-primary rounded-circle d-inline-flex align-items-center justify-content-center overflow-hidden"
+                            style="width: 120px; height: 120px;">
+                            <img th:if="${updateProfileRequest.avatar}" th:src="${updateProfileRequest.avatar}"
+                                class="w-100 h-100 object-fit-cover" alt="Avatar">
+                            <i th:unless="${updateProfileRequest.avatar}" class="fas fa-user fa-4x"></i>
+                        </div>
+                    </div>
+                    <h3 class="fw-bold mb-1" th:text="${updateProfileRequest.fullname}">Full Name</h3>
+                    <p class="text-muted mb-4 small">Student / Professional</p>
+
+                    <div class="d-flex justify-content-center gap-2 mb-4">
+                        <span class="badge bg-primary-light text-primary px-3 py-2 rounded-pill">
+                            <i class="fas fa-check-circle me-1"></i> Verified
+                        </span>
+                    </div>
+
+                    <hr class="my-4 opacity-50">
+
+                    <div class="text-start">
+                        <div class="mb-3 d-flex align-items-center">
+                            <div class="bg-light rounded-3 p-2 me-3 text-primary"><i class="fas fa-phone"></i></div>
+                            <div>
+                                <div class="small text-muted">Phone</div>
+                                <div class="fw-medium small" th:text="${updateProfileRequest.phone ?: 'Not provided'}">
+                                    Phone</div>
+                            </div>
+                        </div>
+                        <div class="mb-3 d-flex align-items-center">
+                            <div class="bg-light rounded-3 p-2 me-3 text-primary"><i class="fas fa-map-marker-alt"></i>
+                            </div>
+                            <div>
+                                <div class="small text-muted">Location</div>
+                                <div class="fw-medium small"
+                                    th:text="${updateProfileRequest.address ?: 'Not provided'}">Location</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Forms -->
+            <div class="col-lg-8">
+                <div th:if="${message}" class="alert alert-success border-0 rounded-4 shadow-sm mb-4">
+                    <i class="fas fa-check-circle me-2"></i> <span th:text="${message}"></span>
+                </div>
+                <div th:if="${error}" class="alert alert-danger border-0 rounded-4 shadow-sm mb-4">
+                    <i class="fas fa-exclamation-circle me-2"></i> <span th:text="${error}"></span>
+                </div>
+
+                <!-- Update Info -->
+                <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-4">
+                    <h4 class="fw-bold mb-4">Personal Information</h4>
+                    <form th:action="@{/profile/update}" th:object="${updateProfileRequest}" method="post">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small text-uppercase tracking-wider">Full
+                                    Name</label>
+                                <input type="text" class="form-control" th:field="*{fullname}"
+                                    placeholder="Enter your name">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small text-uppercase tracking-wider">Phone</label>
+                                <input type="text" class="form-control" th:field="*{phone}"
+                                    placeholder="+84 123 456 789">
+                            </div>
+                            <div class="col-md-12">
+                                <label
+                                    class="form-label fw-semibold small text-uppercase tracking-wider">Address</label>
+                                <input type="text" class="form-control" th:field="*{address}"
+                                    placeholder="123 Street, City">
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold small text-uppercase tracking-wider">Avatar
+                                    URL</label>
+                                <input type="text" class="form-control" th:field="*{avatar}"
+                                    placeholder="https://example.com/avatar.jpg">
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary px-4">Update Information</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Change Password -->
+                <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
+                    <h4 class="fw-bold mb-4">Security Settings</h4>
+                    <p class="text-muted small mb-4">Manage your account security and authentication.</p>
+                    <form th:action="@{/profile/change-password}" th:object="${changePasswordRequest}" method="post">
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label fw-semibold small text-uppercase tracking-wider">Current
+                                    Password</label>
+                                <input type="password" class="form-control" th:field="*{currentPassword}"
+                                    placeholder="••••••••">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small text-uppercase tracking-wider">New
+                                    Password</label>
+                                <input type="password" class="form-control" th:field="*{newPassword}"
+                                    placeholder="••••••••">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small text-uppercase tracking-wider">Confirm New
+                                    Password</label>
+                                <input type="password" class="form-control" th:field="*{confirmPassword}"
+                                    placeholder="••••••••">
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-outline-primary px-4">Change Password</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

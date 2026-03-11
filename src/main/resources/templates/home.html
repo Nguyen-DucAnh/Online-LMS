@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+    th:replace="~{fragments/layout :: layout(~{::title}, ~{::section})}">
+
+<head>
+    <title>Online LMS | Modern Learning Platform</title>
+</head>
+
+<body>
+    <section>
+        <!-- Hero Section -->
+        <div class="position-relative overflow-hidden mb-5">
+            <div class="container position-relative z-1 py-5 my-5">
+                <div class="row align-items-center">
+                    <div class="col-lg-6 text-center text-lg-start mb-5 mb-lg-0">
+                        <span class="badge bg-primary-light text-primary px-3 py-2 rounded-pill mb-3 fw-bold">100%
+                            Online Learning</span>
+                        <h1 class="display-3 fw-extrabold mb-4 lh-1">
+                            Master Your <span class="text-gradient">Future</span> with Expert Knowledge
+                        </h1>
+                        <p class="lead text-muted mb-5 pe-lg-5">
+                            Join thousands of students and start your journey today with our industry-leading courses
+                            and world-class instructors.
+                        </p>
+                        <div sec:authorize="isAnonymous()"
+                            class="d-flex flex-column flex-sm-row justify-content-center justify-content-lg-start gap-3">
+                            <a href="/register" class="btn btn-primary btn-lg px-5 shadow-lg">Start Learning For
+                                Free</a>
+                            <a href="#" class="btn btn-outline-primary btn-lg px-5">Explore All Courses</a>
+                        </div>
+                        <div sec:authorize="isAuthenticated()"
+                            class="d-flex justify-content-center justify-content-lg-start">
+                            <a href="/profile" class="btn btn-primary btn-lg px-5 shadow-lg">Back to My Dashboard</a>
+                        </div>
+                    </div>
+                    <div class="col-lg-6">
+                        <div class="position-relative">
+                            <!-- Floating Card Effect -->
+                            <div class="card border-0 shadow-lg p-3 bg-white rounded-4 overflow-visible">
+                                <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                                    class="rounded-4 w-100 h-auto" alt="Learning Platform">
+                                <div
+                                    class="position-absolute top-100 start-0 translate-middle mt-n3 ms-5 d-none d-md-block">
+                                    <div
+                                        class="card border-0 shadow-lg p-3 bg-white rounded-3 d-flex flex-row align-items-center gap-3">
+                                        <div class="bg-success text-white rounded-circle p-2">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <div>
+                                            <div class="fw-bold small">Certificate Earned</div>
+                                            <div class="text-muted smaller">Full Stack Cloud Developer</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Background Decoration -->
+            <div class="position-absolute top-0 end-0 bg-primary-light rounded-circle translate-middle mt-n5 me-n5"
+                style="width: 600px; height: 600px; filter: blur(100px); z-index: -1;"></div>
+        </div>
+
+        <!-- Stats Section -->
+        <div class="container mb-5 py-4 border-y">
+            <div class="row g-4 text-center">
+                <div class="col-md-3">
+                    <h3 class="fw-bold mb-1">10K+</h3>
+                    <p class="text-muted small mb-0">Active Students</p>
+                </div>
+                <div class="col-md-3 border-start">
+                    <h3 class="fw-bold mb-1">200+</h3>
+                    <p class="text-muted small mb-0">Expert Courses</p>
+                </div>
+                <div class="col-md-3 border-start">
+                    <h3 class="fw-bold mb-1">50+</h3>
+                    <p class="text-muted small mb-0">World Class Teachers</p>
+                </div>
+                <div class="col-md-3 border-start">
+                    <h3 class="fw-bold mb-1">4.9/5</h3>
+                    <p class="text-muted small mb-0">Student Satisfaction</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Latest Courses Section -->
+        <div class="container py-5 mb-5">
+            <div class="d-flex justify-content-between align-items-end mb-5">
+                <div>
+                    <h2 class="display-5 mb-2">Explore Our <span class="text-gradient">Latest</span> Courses</h2>
+                    <p class="text-muted lead mb-0">Discover top-rated courses from industry experts.</p>
+                </div>
+                <a href="/courses" class="btn btn-outline-primary rounded-pill px-4 d-none d-md-inline-block">View All
+                    Courses <i class="fas fa-arrow-right ms-2"></i></a>
+            </div>
+
+            <div class="row g-4 justify-content-center">
+                <!-- Course Item Loop -->
+                <div class="col-md-6 col-lg-4" th:each="course : ${latestCourses}">
+                    <div class="card border-0 h-100 shadow-sm overflow-hidden">
+                        <div class="position-relative">
+                            <img th:src="${course.thumbnail ?: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'}"
+                                class="card-img-top" style="height: 200px; object-fit: cover;" th:alt="${course.title}">
+                            <div class="position-absolute top-0 end-0 m-3">
+                                <span class="badge bg-white text-dark shadow-sm px-3 py-2 rounded-pill small fw-bold"
+                                    th:text="${course.categoryName}">Category</span>
+                            </div>
+                        </div>
+                        <div class="card-body p-4 border-top-0">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="bg-primary-light text-primary rounded-circle p-2 me-2 small"><i
+                                        class="fas fa-user text-primary"></i></div>
+                                <span class="text-muted smaller fw-medium" th:text="${course.instructorName}">Instructor
+                                    Name</span>
+                            </div>
+                            <h5 class="card-title fw-bold mb-3 lh-base">
+                                <a th:href="@{'/courses/' + ${course.id}}"
+                                    class="text-decoration-none text-dark hover-primary"
+                                    th:text="${course.title}">Course Title</a>
+                            </h5>
+                            <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+                                <div>
+                                    <span class="text-muted smaller d-block mb-1">Price</span>
+                                    <span class="fw-bold fs-5 text-primary"
+                                        th:text="${#numbers.formatCurrency(course.listedPrice)}">$99.00</span>
+                                </div>
+                                <a th:href="@{'/courses/' + ${course.id}}"
+                                    class="btn btn-primary-light text-primary rounded-circle p-2"><i
+                                        class="fas fa-plus"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty State -->
+                <div class="col-12 text-center py-5" th:if="${#lists.isEmpty(latestCourses)}">
+                    <div class="bg-light d-inline-block p-4 rounded-circle mb-4">
+                        <i class="fas fa-book-open fa-3x text-muted opacity-50"></i>
+                    </div>
+                    <h4 class="text-muted">No courses available yet.</h4>
+                    <p class="text-muted">Stay tuned for upcoming content!</p>
+                </div>
+            </div>
+
+            <div class="text-center mt-5 d-md-none">
+                <a href="/courses" class="btn btn-outline-primary rounded-pill px-5">View All Courses</a>
+            </div>
+        </div>
+
+        <!-- Modern CTA Section -->
+        <div class="container mb-5">
+            <div class="card border-0 p-5 bg-dark text-white rounded-5 shadow-lg overflow-hidden position-relative">
+                <div class="row align-items-center position-relative z-1">
+                    <div class="col-lg-7 text-center text-lg-start">
+                        <h2 class="display-5 mb-3">Ready to transform your career?</h2>
+                        <p class="text-white-50 mb-0 lead">Join Online LMS today and get access to over 200+
+                            professional courses.</p>
+                    </div>
+                    <div class="col-lg-5 text-center text-lg-end mt-4 mt-lg-0">
+                        <div sec:authorize="isAnonymous()">
+                            <a href="/register" class="btn btn-primary btn-lg px-5 py-3 shadow">Create Free Account</a>
+                        </div>
+                        <div sec:authorize="isAuthenticated()">
+                            <a href="/profile" class="btn btn-primary btn-lg px-5 py-3 shadow">Visit Your Dashboard</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="position-absolute top-0 end-0 bg-primary opacity-10 rounded-circle translate-middle mt-n5 me-n5"
+                    style="width: 400px; height: 400px; filter: blur(50px);"></div>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

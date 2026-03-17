@@ -15,12 +15,9 @@ import java.util.Optional;
 @Repository
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
-    // ─── My Enrollments ───────────────────────────────────────────────────────
+    // ── My Enrollments ────────────────────────────────────────────────────────
 
-    /**
-     * Lấy tất cả enrollment của 1 user, mới nhất trước.
-     * JOIN FETCH course + category trong 1 query → tránh N+1 khi render table.
-     */
+    // List → ORDER BY trong JPQL được phép (không có Pageable)
     @Query("""
         SELECT e FROM Enrollment e
         JOIN FETCH e.course c
@@ -30,8 +27,9 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
         """)
     List<Enrollment> findAllByUserIdOrderByEnrollDateDesc(@Param("userId") Long userId);
 
-    // ─── My Courses (chỉ APPROVED) ────────────────────────────────────────────
+    // ── My Courses (APPROVED only) ────────────────────────────────────────────
 
+    // List → ORDER BY trong JPQL được phép
     @Query("""
         SELECT e FROM Enrollment e
         JOIN FETCH e.course c
@@ -43,91 +41,81 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
         """)
     List<Enrollment> findApprovedByUserId(@Param("userId") Long userId);
 
-    // ─── Access control (Lesson Viewer dùng) ──────────────────────────────────
+    // ── Access control ────────────────────────────────────────────────────────
 
-    /**
-     * Kiểm tra user có enrollment APPROVED cho course không.
-     * Dùng trong Lesson Viewer để block truy cập trái phép.
-     */
-    boolean existsByUser_IdAndCourse_IdAndStatus(
-            Long userId, Long courseId, EnrollmentStatus status);
+    boolean existsByUser_IdAndCourse_IdAndStatus(Long userId, Long courseId, EnrollmentStatus status);
 
-    /**
-     * Kiểm tra user đã có enrollment nào cho course chưa (bất kỳ status).
-     * Dùng trong Learning Enroll để tránh đăng ký trùng.
-     */
     Optional<Enrollment> findByUser_IdAndCourse_Id(Long userId, Long courseId);
 
-    // ─── Enrollment List (Admin/Manager) ──────────────────────────────────────
-
-    /**
-     * Admin: xem tất cả, có filter + search + pagination.
-     * countQuery riêng để Spring không COUNT với JOIN FETCH (lỗi thường gặp).
-     */
+    // ── Admin: Enrollment List ────────────────────────────────────────────────
+    // QUAN TRỌNG: KHÔNG có ORDER BY trong JPQL khi dùng Pageable
+    // Sort được truyền vào qua Pageable từ controller → Spring Data tự thêm
     @Query(value = """
         SELECT e FROM Enrollment e
         JOIN FETCH e.course c
         JOIN FETCH e.user u
         LEFT JOIN FETCH c.category
-        WHERE (:status IS NULL OR e.status = :status)
-          AND (:keyword IS NULL
-               OR LOWER(e.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-               OR LOWER(e.email)    LIKE LOWER(CONCAT('%', :keyword, '%'))
-               OR LOWER(c.title)    LIKE LOWER(CONCAT('%', :keyword, '%')))
-        ORDER BY e.enrollDate DESC
+        WHERE (:courseId IS NULL OR c.id = :courseId)
+          AND (:userId   IS NULL OR u.id = :userId)
+          AND (:status   IS NULL OR e.status = :status)
+          AND (:keyword  IS NULL
+               OR LOWER(e.fullName) LIKE LOWER(CONCAT('%',:keyword,'%'))
+               OR LOWER(e.email)    LIKE LOWER(CONCAT('%',:keyword,'%'))
+               OR LOWER(c.title)    LIKE LOWER(CONCAT('%',:keyword,'%')))
         """,
             countQuery = """
         SELECT COUNT(e) FROM Enrollment e
-        JOIN e.course c
-        WHERE (:status IS NULL OR e.status = :status)
-          AND (:keyword IS NULL
-               OR LOWER(e.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-               OR LOWER(e.email)    LIKE LOWER(CONCAT('%', :keyword, '%'))
-               OR LOWER(c.title)    LIKE LOWER(CONCAT('%', :keyword, '%')))
+        JOIN e.course c JOIN e.user u
+        WHERE (:courseId IS NULL OR c.id = :courseId)
+          AND (:userId   IS NULL OR u.id = :userId)
+          AND (:status   IS NULL OR e.status = :status)
+          AND (:keyword  IS NULL
+               OR LOWER(e.fullName) LIKE LOWER(CONCAT('%',:keyword,'%'))
+               OR LOWER(e.email)    LIKE LOWER(CONCAT('%',:keyword,'%'))
+               OR LOWER(c.title)    LIKE LOWER(CONCAT('%',:keyword,'%')))
         """)
     Page<Enrollment> findAllWithFilter(
-            @Param("status")  EnrollmentStatus status,
-            @Param("keyword") String keyword,
+            @Param("courseId") Long courseId,
+            @Param("userId")   Long userId,
+            @Param("status")   EnrollmentStatus status,
+            @Param("keyword")  String keyword,
             Pageable pageable);
 
-    /**
-     * Manager: chỉ thấy enrollment của course mình là instructor.
-     */
+    // ── Manager: chỉ thấy course của mình ────────────────────────────────────
+    // QUAN TRỌNG: KHÔNG có ORDER BY trong JPQL khi dùng Pageable
     @Query(value = """
         SELECT e FROM Enrollment e
         JOIN FETCH e.course c
         JOIN FETCH e.user u
         LEFT JOIN FETCH c.category
         WHERE c.instructor.id = :instructorId
-          AND (:status IS NULL OR e.status = :status)
-          AND (:keyword IS NULL
-               OR LOWER(e.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-               OR LOWER(e.email)    LIKE LOWER(CONCAT('%', :keyword, '%'))
-               OR LOWER(c.title)    LIKE LOWER(CONCAT('%', :keyword, '%')))
-        ORDER BY e.enrollDate DESC
+          AND (:courseId IS NULL OR c.id = :courseId)
+          AND (:status   IS NULL OR e.status = :status)
+          AND (:keyword  IS NULL
+               OR LOWER(e.fullName) LIKE LOWER(CONCAT('%',:keyword,'%'))
+               OR LOWER(e.email)    LIKE LOWER(CONCAT('%',:keyword,'%'))
+               OR LOWER(c.title)    LIKE LOWER(CONCAT('%',:keyword,'%')))
         """,
             countQuery = """
         SELECT COUNT(e) FROM Enrollment e
-        JOIN e.course c
+        JOIN e.course c JOIN e.user u
         WHERE c.instructor.id = :instructorId
-          AND (:status IS NULL OR e.status = :status)
-          AND (:keyword IS NULL
-               OR LOWER(e.fullName) LIKE LOWER(CONCAT('%', :keyword, '%'))
-               OR LOWER(e.email)    LIKE LOWER(CONCAT('%', :keyword, '%'))
-               OR LOWER(c.title)    LIKE LOWER(CONCAT('%', :keyword, '%')))
+          AND (:courseId IS NULL OR c.id = :courseId)
+          AND (:status   IS NULL OR e.status = :status)
+          AND (:keyword  IS NULL
+               OR LOWER(e.fullName) LIKE LOWER(CONCAT('%',:keyword,'%'))
+               OR LOWER(e.email)    LIKE LOWER(CONCAT('%',:keyword,'%'))
+               OR LOWER(c.title)    LIKE LOWER(CONCAT('%',:keyword,'%')))
         """)
     Page<Enrollment> findByInstructorWithFilter(
             @Param("instructorId") Long instructorId,
+            @Param("courseId")     Long courseId,
             @Param("status")       EnrollmentStatus status,
             @Param("keyword")      String keyword,
             Pageable pageable);
 
-    // ─── Enrollment Details ────────────────────────────────────────────────────
+    // ── Enrollment Details ────────────────────────────────────────────────────
 
-    /**
-     * Load 1 enrollment kèm đầy đủ relations trong 1 query.
-     * Tránh LazyInitializationException trong controller/template.
-     */
     @Query("""
         SELECT e FROM Enrollment e
         JOIN FETCH e.course c
@@ -138,18 +126,29 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
         """)
     Optional<Enrollment> findByIdWithDetails(@Param("id") Long id);
 
-    /**
-     * Manager chỉ được xem enrollment thuộc course của mình.
-     * Nếu empty → controller trả 403.
-     */
+    // ── Manager access check ──────────────────────────────────────────────────
+
+    @Query("""
+        SELECT CASE WHEN COUNT(e) > 0 THEN TRUE ELSE FALSE END
+        FROM Enrollment e
+        WHERE e.id = :enrollmentId
+          AND e.course.instructor.id = :instructorId
+        """)
+    boolean existsByIdAndInstructorId(
+            @Param("enrollmentId") Long enrollmentId,
+            @Param("instructorId") Long instructorId);
+
+    // ── Export (List không Pageable → ORDER BY được phép) ────────────────────
+
     @Query("""
         SELECT e FROM Enrollment e
         JOIN FETCH e.course c
         JOIN FETCH e.user u
-        WHERE e.id = :enrollmentId
-          AND c.instructor.id = :instructorId
+        WHERE (:courseId IS NULL OR c.id = :courseId)
+          AND (:status   IS NULL OR e.status = :status)
+        ORDER BY e.enrollDate DESC
         """)
-    Optional<Enrollment> findByIdAndInstructorId(
-            @Param("enrollmentId")  Long enrollmentId,
-            @Param("instructorId")  Long instructorId);
+    List<Enrollment> findAllForExport(
+            @Param("courseId") Long courseId,
+            @Param("status")   EnrollmentStatus status);
 }

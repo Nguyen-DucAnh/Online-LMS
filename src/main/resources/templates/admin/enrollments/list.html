@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{fragments/layout :: layout(~{::title}, ~{::section})}">
+
+<head>
+    <title>Course Enrollments | Online LMS</title>
+</head>
+
+<body>
+<section>
+    <div class="container-fluid py-4">
+
+        <!-- ── Page header ── -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="fw-bold mb-0">Course Enrollments</h4>
+            <div class="d-flex gap-2">
+                <!-- Import Excel -->
+                <button class="btn btn-outline-secondary btn-sm"
+                        data-bs-toggle="modal" data-bs-target="#importModal">
+                    <i class="fas fa-file-import me-1"></i>Import
+                </button>
+                <!-- Export CSV -->
+                <a th:href="@{/admin/enrollments/export(courseId=${selectedCourseId},status=${selectedStatus})}"
+                   class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-file-export me-1"></i>Export
+                </a>
+                <!-- Add New -->
+                <a th:href="@{/admin/enrollments/new}"
+                   class="btn btn-primary btn-sm">
+                    <i class="fas fa-plus me-1"></i>+ Add New
+                </a>
+            </div>
+        </div>
+
+        <!-- ── Flash messages ── -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show">
+            <span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show">
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- ── Filter bar (khớp ảnh UI) ── -->
+        <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body py-3">
+                <form th:action="@{/admin/enrollments}" method="get" class="row g-2 align-items-end">
+                    <!-- All Courses -->
+                    <div class="col-md-3">
+                        <select name="courseId" class="form-select form-select-sm">
+                            <option value="">All Courses</option>
+                            <option th:each="c : ${courses}"
+                                    th:value="${c.id}"
+                                    th:text="${c.title}"
+                                    th:selected="${c.id == selectedCourseId}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- All Users -->
+                    <div class="col-md-2">
+                        <select name="userId" class="form-select form-select-sm">
+                            <option value="">All Users</option>
+                        </select>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="col-md-2">
+                        <select name="status" class="form-select form-select-sm">
+                            <option value="">All</option>
+                            <option th:each="s : ${statuses}"
+                                    th:value="${s.name()}"
+                                    th:text="${s.name()}"
+                                    th:selected="${s.name() == selectedStatus}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <!-- Search -->
+                    <div class="col-md-3">
+                        <div class="input-group input-group-sm">
+                            <input type="text" name="keyword"
+                                   th:value="${keyword}"
+                                   class="form-control"
+                                   placeholder="Full Name, Email, Course">
+                            <span class="input-group-text bg-white"><i class="fas fa-search text-muted small"></i></span>
+                        </div>
+                    </div>
+
+                    <!-- Filter button -->
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary btn-sm w-100">
+                            <i class="fas fa-filter me-1"></i>Filter
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- ── Table ── -->
+        <div class="card border-0 shadow-sm">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th class="ps-3 py-3 fw-semibold small">ID</th>
+                        <th class="py-3 fw-semibold small">Course</th>
+                        <th class="py-3 fw-semibold small">User Info</th>
+                        <th class="py-3 fw-semibold small">Enrolled At</th>
+                        <th class="py-3 fw-semibold small">Status</th>
+                        <th class="py-3 fw-semibold small">Progress</th>
+                        <th class="pe-3 py-3 fw-semibold small">Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- Empty state -->
+                    <tr th:if="${enrollments.empty}">
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="fas fa-inbox fa-2x mb-2 d-block opacity-50"></i>
+                            Không có enrollment nào.
+                        </td>
+                    </tr>
+
+                    <!-- Data rows (khớp ảnh UI) -->
+                    <tr th:each="e : ${enrollments.content}">
+                        <!-- ID -->
+                        <td class="ps-3 small text-muted" th:text="${e.id}"></td>
+
+                        <!-- Course: title + Fee($) dưới tiêu đề -->
+                        <td>
+                            <div class="fw-medium small" th:text="${e.courseTitle}"></div>
+                            <div class="text-muted" style="font-size:11px;">
+                                Fee($): <span th:text="${e.fee != null ? e.fee.setScale(2) : '0.00'}"></span>
+                            </div>
+                        </td>
+
+                        <!-- User Info: name + email -->
+                        <td>
+                            <div class="small fw-medium" th:text="${e.fullName}"></div>
+                            <div class="text-muted" style="font-size:11px;" th:text="${e.email}"></div>
+                        </td>
+
+                        <!-- Enrolled At -->
+                        <td class="small text-muted"
+                            th:text="${e.enrollDate != null ? #temporals.format(e.enrollDate,'yyyy-MM-dd HH:mm:ss') : '-'}">
+
+                            <!-- Status badge (khớp màu ảnh UI) -->
+                        <td>
+                            <span th:if="${e.status.name() == 'PENDING'}"
+                                  class="badge rounded-pill px-3 py-1"
+                                  style="background:#fff3cd;color:#856404;font-size:11px;">
+                                Pending
+                            </span>
+                            <span th:if="${e.status.name() == 'APPROVED'}"
+                                  class="badge rounded-pill px-3 py-1"
+                                  style="background:#d1e7dd;color:#0a3622;font-size:11px;">
+                                Approved
+                            </span>
+                            <span th:if="${e.status.name() == 'REJECTED'}"
+                                  class="badge rounded-pill px-3 py-1"
+                                  style="background:#f8d7da;color:#58151c;font-size:11px;">
+                                Rejected
+                            </span>
+                            <span th:if="${e.status.name() == 'CANCELLED'}"
+                                  class="badge rounded-pill px-3 py-1"
+                                  style="background:#e2e3e5;color:#41464b;font-size:11px;">
+                                Cancelled
+                            </span>
+                        </td>
+
+                        <!-- Progress -->
+                        <td class="small text-muted"
+                            th:text="${e.progress != null ? e.progress.setScale(2) : '0.00'}">
+                        </td>
+
+                        <!-- Actions: edit + delete (khớp icon ảnh UI) -->
+                        <td class="pe-3">
+                            <div class="d-flex gap-1">
+                                <!-- Edit -->
+                                <a th:href="@{/admin/enrollments/{id}/edit(id=${e.id})}"
+                                   class="btn btn-sm btn-outline-primary p-1"
+                                   style="width:30px;height:30px;line-height:1;"
+                                   title="Edit">
+                                    <i class="fas fa-edit" style="font-size:12px;"></i>
+                                </a>
+
+                                <!-- Delete -->
+                                <form th:action="@{/admin/enrollments/{id}/delete(id=${e.id})}"
+                                      method="post" class="d-inline"
+                                      onsubmit="return confirm('Xác nhận xóa enrollment này?')">
+                                    <input type="hidden" name="_method" value="post">
+                                    <button type="submit"
+                                            class="btn btn-sm btn-outline-danger p-1"
+                                            style="width:30px;height:30px;line-height:1;"
+                                            title="Delete">
+                                        <i class="fas fa-trash" style="font-size:12px;"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="card-footer bg-white border-0 py-3"
+                 th:if="${enrollments.totalPages > 1}">
+                <nav>
+                    <ul class="pagination pagination-sm justify-content-center mb-0">
+                        <li class="page-item" th:classappend="${enrollments.first ? 'disabled' : ''}">
+                            <a class="page-link"
+                               th:href="@{/admin/enrollments(page=${enrollments.number-1},
+                                      courseId=${selectedCourseId},status=${selectedStatus},keyword=${keyword})}">
+                                &laquo;
+                            </a>
+                        </li>
+                        <li class="page-item"
+                            th:each="i : ${#numbers.sequence(0, enrollments.totalPages - 1)}"
+                            th:classappend="${i == enrollments.number ? 'active' : ''}">
+                            <a class="page-link"
+                               th:href="@{/admin/enrollments(page=${i},
+                                      courseId=${selectedCourseId},status=${selectedStatus},keyword=${keyword})}"
+                               th:text="${i + 1}">1</a>
+                        </li>
+                        <li class="page-item" th:classappend="${enrollments.last ? 'disabled' : ''}">
+                            <a class="page-link"
+                               th:href="@{/admin/enrollments(page=${enrollments.number+1},
+                                      courseId=${selectedCourseId},status=${selectedStatus},keyword=${keyword})}">
+                                &raquo;
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        <!-- /card table -->
+
+    </div>
+
+    <!-- ── Import Modal ── -->
+    <div class="modal fade" id="importModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-semibold">Import Enrollments from Excel</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/admin/enrollments/import}"
+                      method="post" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-medium small">Select Course *</label>
+                            <select name="courseId" class="form-select form-select-sm" required>
+                                <option value="">-- Choose Course --</option>
+                                <option th:each="c : ${courses}"
+                                        th:value="${c.id}"
+                                        th:text="${c.title}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-medium small">Excel File *</label>
+                            <input type="file" name="file" class="form-control form-control-sm"
+                                   accept=".xlsx,.xls" required>
+                            <div class="form-text small text-muted">
+                                Cột A: Email | Cột B: Full Name | Cột C: Phone | Cột D: Fee
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-light btn-sm"
+                                data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-upload me-1"></i>Import
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- /import modal -->
+
+</section>
+</body>
+</html>

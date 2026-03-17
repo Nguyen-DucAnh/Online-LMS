@@ -34,6 +34,14 @@ public class Lesson extends BaseEntity {
     @Builder.Default
     private Integer orderIndex = 0;
 
+    @Column(name = "content_file_path", length = 500)
+    private String contentFilePath;
+
+
+    @Column(name = "preview_enabled", nullable = false)
+    @Builder.Default
+    private Boolean previewEnabled = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chapter_id", nullable = false)
     private Chapter chapter;

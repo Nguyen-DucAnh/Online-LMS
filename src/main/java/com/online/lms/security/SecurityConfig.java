@@ -63,7 +63,7 @@ public class SecurityConfig {
                 redirectUrl = "/login?disabled=true";
             } else if (exception instanceof LockedException) {
                 redirectUrl = "/login?locked=true";
-            } else if (exception instanceof BadCredentialsException) {
+            } else if (exception instanceof BadCredentialsException) {  
                 redirectUrl = "/login?error=true";
             }
 
@@ -82,8 +82,10 @@ public class SecurityConfig {
                         .requestMatchers("/profile/**").authenticated()
                         .requestMatchers("/", "/login", "/perform-login", "/register",
                                 "/forgot-password", "/reset-password/**", "/verify-otp/**", "/resend-otp",
-                                "/css/**", "/js/**", "/images/**", "/output.css")
+                                "/css/**", "/js/**", "/images/**", "/output.css", "/uploads/**")
                         .permitAll()
+                        .requestMatchers("/courses/{id}/lessons/**").hasAnyRole("ADMIN", "MANAGER", "MEMBER")
+                        .requestMatchers("/courses/**").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")

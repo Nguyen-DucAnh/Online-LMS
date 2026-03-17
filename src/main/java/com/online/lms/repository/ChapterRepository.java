@@ -15,4 +15,6 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
     List<Chapter> findByCourseIdWithLessons(@Param("courseId") Long courseId);
 
     Long countByCourseId(Long courseId);
+
+    java.util.Optional<Chapter> findByIdAndCourse_Id(Long chapterId, Long courseId);
 }

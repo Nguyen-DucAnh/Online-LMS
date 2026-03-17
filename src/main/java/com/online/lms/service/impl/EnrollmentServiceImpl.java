@@ -1,5 +1,6 @@
 package com.online.lms.service.impl;
 
+import com.online.lms.dto.enrollment.MyCourseDTO;
 import com.online.lms.dto.enrollment.MyEnrollmentDTO;
 import com.online.lms.entity.Course;
 import com.online.lms.entity.Enrollment;
@@ -15,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Slf4j
@@ -37,6 +39,19 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 .findAllByUserIdOrderByEnrollDateDesc(currentUser.getId())
                 .stream()
                 .map(this::toMyEnrollmentDTO)
+                .toList();
+    }
+
+    // ─── My Courses ───────────────────────────────────────────────────────────
+
+    @Override
+    public List<MyCourseDTO> getMyCourses() {
+        User currentUser = getCurrentUser();
+        log.info("getMyCourses - userId={}", currentUser.getId());
+        return enrollmentRepository
+                .findApprovedByUserId(currentUser.getId())
+                .stream()
+                .map(this::toMyCourseDTO)
                 .toList();
     }
 
@@ -83,6 +98,34 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 .rejectedNotes(e.getRejectedNotes())
                 .progress(e.getProgress())
                 .completedAt(e.getCompletedAt())
+                .build();
+    }
+
+    /**
+     * Map Enrollment → MyCourseDTO.
+     *
+     * progressInt: cần là int để CSS width không bị "45.50%".
+     * completed  : true khi completedAt != null (hoặc progress == 100).
+     */
+    private MyCourseDTO toMyCourseDTO(Enrollment e) {
+        Course c = e.getCourse();
+
+        BigDecimal progress = e.getProgress() != null ? e.getProgress() : BigDecimal.ZERO;
+        int progressInt = progress.intValue(); // VD: 45.50 → 45
+        boolean completed = e.getCompletedAt() != null
+                || progress.compareTo(new BigDecimal("100")) >= 0;
+
+        return MyCourseDTO.builder()
+                .enrollmentId(e.getId())
+                .courseId(c.getId())
+                .courseTitle(c.getTitle())
+                .courseThumbnail(c.getThumbnail())
+                .categoryName(c.getCategory() != null ? c.getCategory().getName() : null)
+                .instructorName(c.getInstructor() != null ? c.getInstructor().getFullName() : null)
+                .enrollDate(e.getEnrollDate())
+                .progress(progress)
+                .progressInt(progressInt)
+                .completed(completed)
                 .build();
     }
 }

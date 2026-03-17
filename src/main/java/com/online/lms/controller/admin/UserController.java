@@ -22,7 +22,7 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    // 1. Màn hình danh sách (Phân trang, Lọc, Tìm kiếm)
+
     @GetMapping
     public String listUsers(
             @RequestParam(required = false) UserRole role,
@@ -45,7 +45,7 @@ public class UserController {
         return "admin/user/user-list";
     }
 
-    // 2. Màn hình thêm mới
+
     @GetMapping("/new")
     public String showAddForm(Model model) {
         model.addAttribute("user", new User());
@@ -54,7 +54,7 @@ public class UserController {
         return "admin/user/user-detail";
     }
 
-    // 3. Màn hình chỉnh sửa
+
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
         model.addAttribute("user", userService.getUserById(id));
@@ -63,25 +63,24 @@ public class UserController {
         return "admin/user/user-detail";
     }
 
-    // 4. Lưu dữ liệu
+
     @PostMapping("/save")
     public String saveUser(@Valid @ModelAttribute("user") User user,
                            BindingResult result, Model model) {
 
-        // THÊM ĐOẠN NÀY: Kiểm tra trùng Email khi Thêm Mới User
+
         if (user.getId() == null && userService.existsByEmail(user.getEmail())) {
-            // Đẩy lỗi vào ô email để Thymeleaf hiển thị ra màn hình
+
             result.rejectValue("email", "error.user", "This email address is already in use!");
         }
 
-        // Nếu có lỗi (lỗi để trống, lỗi sai format, hoặc lỗi trùng email ở trên)
         if (result.hasErrors()) {
             model.addAttribute("roles", UserRole.values());
             model.addAttribute("statuses", UserStatus.values());
-            return "admin/user/user-detail"; // Quay lại trang form cùng thông báo lỗi
+            return "admin/user/user-detail";
         }
 
-        // Nếu qua hết các vòng kiểm tra thì mới tiến hành lưu
+
         userService.saveUserFromForm(user);
 
         return "redirect:/admin/users";
@@ -100,7 +99,6 @@ public class UserController {
         return "redirect:/admin/users";
     }
 
-    // 6. Xóa User
     @GetMapping("/delete/{id}")
     public String deleteUser(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {

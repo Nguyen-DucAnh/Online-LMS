@@ -20,7 +20,7 @@ public class SettingController {
     @Autowired
     private SettingService settingService;
 
-    // 1. Danh sách (Fix giữ tham số Search và Phân trang)
+
     @GetMapping
     public String listSettings(
             @RequestParam(required = false) Long typeId,
@@ -32,10 +32,9 @@ public class SettingController {
         Pageable pageable = PageRequest.of(page, 10, Sort.by("priority").ascending());
         Page<Setting> settingPage = settingService.findAll(typeId, status, keyword, pageable);
 
-        model.addAttribute("settingPage", settingPage); // Đổi tên thành settingPage cho chuẩn phân trang
+        model.addAttribute("settingPage", settingPage);
         model.addAttribute("types", settingService.getAllTypes());
 
-        // Trả lại dữ liệu search để hiển thị trên UI
         model.addAttribute("selectedTypeId", typeId);
         model.addAttribute("selectedStatus", status);
         model.addAttribute("keyword", keyword);
@@ -43,14 +42,14 @@ public class SettingController {
         return "admin/setting/setting-list";
     }
 
-    // 2. Thay đổi trạng thái
+
     @GetMapping("/status/{id}")
     public String toggleStatus(@PathVariable Long id) {
         settingService.toggleStatus(id);
         return "redirect:/admin/settings";
     }
 
-    // 3. Màn hình thêm mới (Fix bỏ code thừa)
+
     @GetMapping("/new")
     public String showAddForm(Model model) {
         model.addAttribute("setting", new Setting());
@@ -58,7 +57,7 @@ public class SettingController {
         return "admin/setting/setting-detail";
     }
 
-    // 4. Màn hình chỉnh sửa (Fix bỏ code thừa)
+
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
         model.addAttribute("setting", settingService.findById(id));
@@ -66,12 +65,12 @@ public class SettingController {
         return "admin/setting/setting-detail";
     }
 
-    // 5. Lưu dữ liệu (Fix xử lý lỗi và Type)
+
     @PostMapping("/save")
     public String saveSetting(@Valid @ModelAttribute("setting") Setting setting,
                               BindingResult result, Model model) {
 
-        // Nếu người dùng chọn "-- None --" thì gán Type = null để tránh lỗi Foreign Key
+
         if (setting.getType() != null && setting.getType().getId() == null) {
             setting.setType(null);
         }

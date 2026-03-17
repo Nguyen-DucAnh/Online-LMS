@@ -57,6 +57,9 @@ public class User extends BaseEntity {
     @Column(name = "OtpExpiry")
     private java.time.LocalDateTime otpExpiry;
 
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Course> courses;
+
     public boolean isDeletable() {
         return instructedCourses == null || instructedCourses.isEmpty();
     }

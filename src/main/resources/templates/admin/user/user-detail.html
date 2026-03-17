@@ -3,21 +3,32 @@
 <head>
     <title>User Detail | OLMS</title>
     <th:block th:replace="~{fragments/layout :: commonHead}"></th:block>
+
+    <style>
+        :root {
+            --sidebar-width: 250px;
+        }
+
+        .topbar, .main-content {
+            margin-left: var(--sidebar-width);
+        }
+    </style>
 </head>
 <body class="bg-light">
 
+<div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+<div class="topbar px-4 py-3 d-flex align-items-center">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 small">
+            <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Home</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/admin/users}">User List</a></li>
+            <li class="breadcrumb-item active fw-600">User Detail</li>
+        </ol>
+    </nav>
+</div>
 
 <main class="main-content">
-    <div class="topbar px-4 d-flex align-items-center">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-0 small">
-                <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Home</a></li>
-                <li class="breadcrumb-item"><a th:href="@{/admin/users}">User List</a></li>
-                <li class="breadcrumb-item active fw-600">User Detail</li>
-            </ol>
-        </nav>
-    </div>
-
     <div class="p-4">
         <div class="card border-0 shadow-sm rounded-4" style="max-width: 850px;">
             <div class="card-body p-4">

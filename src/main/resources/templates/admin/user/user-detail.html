@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>User Detail | OLMS</title>
+    <th:block th:replace="~{fragments/layout :: commonHead}"></th:block>
+
+    <style>
+        :root {
+            --sidebar-width: 250px;
+        }
+
+        .topbar, .main-content {
+            margin-left: var(--sidebar-width);
+        }
+    </style>
+</head>
+<body class="bg-light">
+
+<div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+<div class="topbar px-4 py-3 d-flex align-items-center">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 small">
+            <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Home</a></li>
+            <li class="breadcrumb-item"><a th:href="@{/admin/users}">User List</a></li>
+            <li class="breadcrumb-item active fw-600">User Detail</li>
+        </ol>
+    </nav>
+</div>
+
+<main class="main-content">
+    <div class="p-4">
+        <div class="card border-0 shadow-sm rounded-4" style="max-width: 850px;">
+            <div class="card-body p-4">
+                <h4 class="fw-bold mb-4 text-dark border-bottom pb-3"
+                    th:text="${user.id == null ? 'Create New User' : 'Edit User Info'}"></h4>
+
+                <form th:action="@{/admin/users/save}" th:object="${user}" method="post" class="row g-4">
+                    <input type="hidden" th:field="*{id}">
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Full Name <span class="text-danger">*</span></label>
+                        <input type="text" th:field="*{fullName}" class="form-control rounded-3 shadow-none" required maxlength="100">
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Email <span class="text-danger">*</span></label>
+                        <input type="email" th:field="*{email}" class="form-control rounded-3 shadow-none" required
+                               th:readonly="${user.id != null}">
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('email')}" th:errors="*{email}"></div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Phone Number</label>
+                        <input type="text" th:field="*{phone}" class="form-control rounded-3 shadow-none">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">Role</label>
+                        <select th:field="*{role}" class="form-select rounded-3 shadow-none">
+                            <option th:each="r : ${roles}" th:value="${r}" th:text="${r}"></option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label small fw-bold">Status</label>
+                        <select th:field="*{status}" class="form-select rounded-3 shadow-none">
+                            <option th:each="s : ${statuses}" th:value="${s}" th:text="${s}"></option>
+                        </select>
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label small fw-bold">Address</label>
+                        <textarea th:field="*{address}" class="form-control rounded-3 shadow-none" rows="2"></textarea>
+                    </div>
+
+                    <div class="col-12 mt-5 border-top pt-4">
+                        <button type="submit" class="btn btn-primary px-5 rounded-pill shadow-sm">
+                            <i class="fas fa-save me-2"></i> Save Changes
+                        </button>
+                        <a th:href="@{/admin/users}" class="btn btn-light px-4 rounded-pill border ms-2">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

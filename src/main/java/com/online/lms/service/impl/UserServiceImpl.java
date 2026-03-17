@@ -2,13 +2,14 @@ package com.online.lms.service.impl;
 
 import com.online.lms.dto.request.user.ChangePasswordRequestDTO;
 import com.online.lms.dto.request.user.UpdateProfileRequestDTO;
-import com.online.lms.dto.request.user.UserRequestDTO;
 import com.online.lms.entity.User;
 import com.online.lms.enums.UserRole;
 import com.online.lms.enums.UserStatus;
 import com.online.lms.repository.UserRepository;
 import com.online.lms.service.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -38,70 +39,65 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    @Transactional
-    public void createNewUser(UserRequestDTO dto) {
-        // Validation thủ công thay vì dùng Annotation tại Entity
-        if (userRepository.existsByEmail(dto.getEmail())) {
-            throw new RuntimeException("Email đã tồn tại trên hệ thống!");
-        }
-
-        String rawPassword = UUID.randomUUID().toString().substring(0, 8);
-        User user = User.builder()
-                .fullName(dto.getFullName())
-                .email(dto.getEmail())
-                .phone(dto.getPhone())
-                .address(dto.getAddress())
-                .role(UserRole.valueOf(dto.getRole()))
-                .status(UserStatus.ACTIVE) // Đảm bảo Enum UserStatus có ACTIVE
-                .password(passwordEncoder.encode(rawPassword))
-                .build();
-
-        userRepository.save(user);
-
-        // Gửi mail
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(user.getEmail());
-        message.setSubject("LMS Account Created");
-        message.setText("Mật khẩu của bạn là: " + rawPassword);
-        mailSender.send(message);
+    public Page<User> searchUsers(UserRole role, UserStatus status, String keyword, Pageable pageable) {
+        return userRepository.searchUsers(role, status, keyword, pageable);
+    }
+    @Override
+    public boolean existsByEmail(String email) {
+        return userRepository.existsByEmail(email);
     }
 
     @Override
     @Transactional
-    public void updateUser(Long id, UserRequestDTO dto) {
-        User user = getUserById(id);
-        user.setFullName(dto.getFullName());
-        user.setPhone(dto.getPhone());
-        user.setAddress(dto.getAddress());
-        user.setRole(UserRole.valueOf(dto.getRole()));
-        userRepository.save(user);
-    }
+    public void saveUserFromForm(User user) {
+        if (user.getId() == null) {
+            // 1. TẠO MỚI: Sinh mật khẩu ngẫu nhiên (8 ký tự)
+            String randomPassword = UUID.randomUUID().toString().substring(0, 8);
+            user.setPassword(passwordEncoder.encode(randomPassword));
 
-    @Override
-    @Transactional
-    public void toggleStatus(Long id) {
-        User user = getUserById(id);
-        // Kiểm tra đúng giá trị Enum của bạn (Ví dụ: ACTIVE/DEACTIVE)
-        if (user.getStatus() == UserStatus.ACTIVE) {
-            user.setStatus(UserStatus.PENDING);
+            // Lưu user vào DB
+            userRepository.save(user);
+
+            // Gửi Email thông báo
+            try {
+                SimpleMailMessage message = new SimpleMailMessage();
+                message.setTo(user.getEmail());
+                message.setSubject("Welcome to OLMS - Your Account Has Been Created");
+                message.setText("Hello " + user.getFullName() + ",\n\n"
+                        + "Your account has been successfully created.\n"
+                        + "Here are your login details:\n"
+                        + "Email: " + user.getEmail() + "\n"
+                        + "Password: " + randomPassword + "\n\n"
+                        + "Please log in and change your password as soon as possible.\n"
+                        + "Best regards,\nOLMS Admin Team");
+                mailSender.send(message);
+            } catch (Exception e) {
+                System.out.println("Lỗi gửi mail: " + e.getMessage());
+            }
         } else {
-            user.setStatus(UserStatus.ACTIVE);
+
+            User existingUser = getUserById(user.getId());
+            user.setPassword(existingUser.getPassword());
+            userRepository.save(user);
         }
-        userRepository.save(user);
     }
+
 
     @Override
     @Transactional
     public void deleteUser(Long id) {
         User user = getUserById(id);
-        // Logic: Chỉ user mới (không có giao dịch/khóa học) mới được xóa
-        if (user.getInstructedCourses() != null && !user.getInstructedCourses().isEmpty()) {
-            throw new RuntimeException("Không thể xóa người dùng đã có dữ liệu khóa học!");
+
+        // Kiểm tra xem User đã có dữ liệu giao dịch/khóa học chưa
+        // Lưu ý: Nếu entity User của bạn map tên khác cho danh sách khóa học (ví dụ getEnrollments()), hãy sửa lại cho khớp
+        if (user.getCourses() != null && !user.getCourses().isEmpty()) {
+            throw new RuntimeException("Cannot delete user who already has transactions or courses!");
         }
+
         userRepository.delete(user);
     }
 
-    // --- Giữ nguyên các hàm cũ của bạn ---
+
     @Override
     public User getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();

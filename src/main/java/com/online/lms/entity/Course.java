@@ -61,4 +61,8 @@ public class Course extends BaseEntity {
     @OrderBy("orderIndex ASC")
     @Builder.Default
     private List<Chapter> chapters = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 }

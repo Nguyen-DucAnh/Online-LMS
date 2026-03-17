@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Setting List | OLMS</title>
+    <th:block th:replace="~{fragments/layout :: commonHead}"></th:block>
+
+    <style>
+        :root { --sidebar-width: 250px; }
+        .topbar, .main-content { margin-left: var(--sidebar-width); }
+    </style>
+</head>
+<body class="bg-light">
+
+<div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+<div class="topbar d-flex justify-content-between align-items-center px-4 py-3">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 small">
+            <li class="breadcrumb-item"><a th:href="@{/admin/dashboard}">Home</a></li>
+            <li class="breadcrumb-item active fw-600">Setting List</li>
+        </ol>
+    </nav>
+    <a th:href="@{/admin/dashboard}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+        <i class="fas fa-arrow-left me-1"></i> Dashboard
+    </a>
+</div>
+
+<main class="main-content">
+    <div class="p-4">
+        <div class="card shadow-sm border-0 p-4 rounded-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 class="mb-0 fw-bold text-dark">Setting Management</h4>
+                <a th:href="@{/admin/settings/new}" class="btn btn-primary px-4 rounded-pill shadow-sm">
+                    <i class="fas fa-plus me-2"></i> New Setting
+                </a>
+            </div>
+
+            <form th:action="@{/admin/settings}" method="get" class="row g-2 mb-4">
+                <div class="col-md-2">
+                    <select name="typeId" class="form-select form-select-sm rounded-3 shadow-none">
+                        <option value="">All Types</option>
+                        <option th:each="t : ${types}" th:value="${t.id}" th:text="${t.name}" th:selected="${t.id == selectedTypeId}"></option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="status" class="form-select form-select-sm rounded-3 shadow-none">
+                        <option value="">All Statuses</option>
+                        <option value="Active" th:selected="${selectedStatus == 'Active'}">Active</option>
+                        <option value="Inactive" th:selected="${selectedStatus == 'Inactive'}">Inactive</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <input type="text" name="keyword" class="form-control form-control-sm rounded-3 shadow-none" placeholder="Enter keyword(s) to search" th:value="${keyword}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-secondary btn-sm px-4 w-100 rounded-3 shadow-none">Search</button>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light small text-uppercase">
+                    <tr>
+                        <th class="ps-3">Id</th>
+                        <th>Name</th>
+                        <th>Type</th>
+                        <th>Value</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th class="text-end pe-3">Action</th>
+                    </tr>
+                    </thead>
+                    <tbody class="small">
+                    <tr th:each="s : ${settingPage.content}">
+                        <td class="ps-3" th:text="${s.id}"></td>
+                        <td th:text="${s.name}" class="fw-bold text-dark"></td>
+                        <td th:text="${s.type != null ? s.type.name : '-'}"></td>
+                        <td th:text="${s.value}"></td>
+                        <td th:text="${s.priority}"></td>
+                        <td>
+                            <span th:classappend="${s.status == 'Active' ? 'badge bg-success-subtle text-success' : 'badge bg-secondary-subtle text-secondary'}"
+                                  class="badge rounded-pill px-3" th:text="${s.status}"></span>
+                        </td>
+                        <td class="text-end pe-3">
+                            <a th:href="@{/admin/settings/edit/{id}(id=${s.id})}" class="btn btn-sm btn-light rounded-circle text-primary shadow-sm me-2" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a th:href="@{/admin/settings/status/{id}(id=${s.id})}" class="btn btn-sm btn-light rounded-circle shadow-sm" title="Toggle Status">
+                                <i class="fas" th:classappend="${s.status == 'Active' ? 'fa-ban text-warning' : 'fa-check text-success'}"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    <tr th:if="${settingPage.empty}">
+                        <td colspan="7" class="text-center text-muted py-4">No settings found.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:if="${settingPage.totalPages > 1}" class="d-flex justify-content-end mt-4">
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item" th:classappend="${settingPage.first ? 'disabled' : ''}">
+                        <a class="page-link shadow-none" th:href="@{/admin/settings(page=${settingPage.number - 1}, typeId=${selectedTypeId}, status=${selectedStatus}, keyword=${keyword})}">Previous</a>
+                    </li>
+                    <li class="page-item" th:each="i : ${#numbers.sequence(0, settingPage.totalPages - 1)}" th:classappend="${settingPage.number == i ? 'active' : ''}">
+                        <a class="page-link shadow-none" th:href="@{/admin/settings(page=${i}, typeId=${selectedTypeId}, status=${selectedStatus}, keyword=${keyword})}" th:text="${i + 1}"></a>
+                    </li>
+                    <li class="page-item" th:classappend="${settingPage.last ? 'disabled' : ''}">
+                        <a class="page-link shadow-none" th:href="@{/admin/settings(page=${settingPage.number + 1}, typeId=${selectedTypeId}, status=${selectedStatus}, keyword=${keyword})}">Next</a>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</main>
+</body>
+</html>

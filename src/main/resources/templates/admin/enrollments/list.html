@@ -145,6 +145,7 @@
                         <!-- Enrolled At -->
                         <td class="small text-muted"
                             th:text="${e.enrollDate != null ? #temporals.format(e.enrollDate,'yyyy-MM-dd HH:mm:ss') : '-'}">
+                        </td>
 
                             <!-- Status badge (khớp màu ảnh UI) -->
                         <td>
@@ -190,7 +191,7 @@
                                 <form th:action="@{/admin/enrollments/{id}/delete(id=${e.id})}"
                                       method="post" class="d-inline"
                                       onsubmit="return confirm('Xác nhận xóa enrollment này?')">
-                                    <input type="hidden" name="_method" value="post">
+                                                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                                     <button type="submit"
                                             class="btn btn-sm btn-outline-danger p-1"
                                             style="width:30px;height:30px;line-height:1;"
@@ -250,6 +251,7 @@
                 </div>
                 <form th:action="@{/admin/enrollments/import}"
                       method="post" enctype="multipart/form-data">
+                                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label fw-medium small">Select Course *</label>

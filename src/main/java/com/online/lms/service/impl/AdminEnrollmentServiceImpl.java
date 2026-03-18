@@ -23,6 +23,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.text.Normalizer;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -159,7 +163,16 @@ public class AdminEnrollmentServiceImpl implements AdminEnrollmentService {
     public byte[] exportToCsv(Long courseId, EnrollmentStatus status) throws IOException {
         // Lấy tất cả (không phân trang) để export
         var enrollments = enrollmentRepository.findAllForExport(courseId, status);
+        return toCsvBytes(enrollments);
+    }
 
+    @Override
+    public byte[] exportToCsvByInstructor(Long instructorId, Long courseId, EnrollmentStatus status) throws IOException {
+        var enrollments = enrollmentRepository.findAllForExportByInstructor(instructorId, courseId, status);
+        return toCsvBytes(enrollments);
+    }
+
+    private byte[] toCsvBytes(List<Enrollment> enrollments) {
         StringBuilder sb = new StringBuilder();
         sb.append("ID,Course,Full Name,Email,Phone,Enrolled At,Fee,Status,Progress\n");
         for (Enrollment e : enrollments) {
@@ -194,48 +207,52 @@ public class AdminEnrollmentServiceImpl implements AdminEnrollmentService {
         int count = 0;
         try (Workbook workbook = WorkbookFactory.create(file.getInputStream())) {
             Sheet sheet = workbook.getSheetAt(0);
-            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+            DataFormatter dataFormatter = new DataFormatter();
+            FormulaEvaluator formulaEvaluator = workbook.getCreationHelper().createFormulaEvaluator();
+
+            ImportLayout layout = detectImportLayout(sheet, dataFormatter, formulaEvaluator);
+            for (int i = layout.dataStartRow(); i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
                 if (row == null) continue;
 
-                String email   = getCellString(row, 0);
-                String name    = getCellString(row, 1);
-                String phone   = getCellString(row, 2);
-                String feeStr  = getCellString(row, 3);
+                String email = getCellString(row, layout.emailCol(), dataFormatter, formulaEvaluator);
+                String name = getCellString(row, layout.nameCol(), dataFormatter, formulaEvaluator);
+                String phone = getCellString(row, layout.phoneCol(), dataFormatter, formulaEvaluator);
+                String feeStr = getCellString(row, layout.feeCol(), dataFormatter, formulaEvaluator);
 
                 if (email == null || email.isBlank()) continue;
+                email = email.trim().toLowerCase();
 
-                // Tìm hoặc tạo user
-                User user = userRepository.findByEmail(email)
-                        .orElseGet(() -> {
-                            User newUser = new User();
-                            newUser.setEmail(email);
-                            newUser.setFullName(name != null ? name : email);
-                            newUser.setPhone(phone);
-                            newUser.setPassword("IMPORT_" + System.currentTimeMillis());
-                            newUser.setStatus(com.online.lms.enums.UserStatus.PENDING);
-                            newUser.setRole(com.online.lms.enums.UserRole.MEMBER);
-                            return userRepository.save(newUser);
-                        });
-
-                // Bỏ qua nếu đã enroll rồi
-                if (enrollmentRepository.findByUser_IdAndCourse_Id(user.getId(), courseId).isPresent()) {
+                // Chỉ import cho user đã tồn tại để tránh tạo account rác
+                User user = userRepository.findByEmail(email).orElse(null);
+                if (user == null) {
+                    log.warn("Skip import row {}: user email '{}' không tồn tại", i + 1, email);
                     continue;
                 }
 
-                BigDecimal fee = BigDecimal.ZERO;
-                try { if (feeStr != null && !feeStr.isBlank()) fee = new BigDecimal(feeStr); }
-                catch (NumberFormatException ignored) {}
+                // Bỏ qua nếu đã enroll rồi
+                BigDecimal fee = parseFee(feeStr);
 
-                // Enrollment entity không có @Builder
+                var existing = enrollmentRepository.findByUser_IdAndCourse_Id(user.getId(), courseId);
+                if (existing.isPresent()) {
+                    Enrollment e = existing.get();
+                    if (name != null && !name.isBlank()) e.setFullName(name);
+                    e.setEmail(email);
+                    if (phone != null && !phone.isBlank()) e.setPhone(phone);
+                    if (fee != null) e.setFee(fee);
+                    enrollmentRepository.save(e);
+                    count++;
+                    continue;
+                }
+
                 Enrollment e = new Enrollment();
                 e.setCourse(course);
                 e.setUser(user);
-                e.setFullName(name != null ? name : email);
+                e.setFullName(name != null && !name.isBlank() ? name : email);
                 e.setEmail(email);
                 e.setPhone(phone);
                 e.setStatus(EnrollmentStatus.PENDING);
-                e.setFee(fee);
+                e.setFee(fee != null ? fee : BigDecimal.ZERO);
                 e.setProgress(BigDecimal.ZERO);
 
                 enrollmentRepository.save(e);
@@ -303,13 +320,111 @@ public class AdminEnrollmentServiceImpl implements AdminEnrollmentService {
         return val;
     }
 
-    private String getCellString(Row row, int col) {
+    private BigDecimal parseFee(String feeStr) {
+        if (feeStr == null || feeStr.isBlank()) return BigDecimal.ZERO;
+
+        String raw = feeStr.trim().replaceAll("[^0-9,.-]", "");
+        if (raw.isBlank()) return BigDecimal.ZERO;
+
+        // Handle common decimal formats: 1,234.56 | 1.234,56 | 1234,56
+        if (raw.contains(",") && raw.contains(".")) {
+            if (raw.lastIndexOf(',') > raw.lastIndexOf('.')) {
+                raw = raw.replace(".", "").replace(',', '.');
+            } else {
+                raw = raw.replace(",", "");
+            }
+        } else if (raw.contains(",")) {
+            raw = raw.replace(',', '.');
+        }
+
+        try {
+            return new BigDecimal(raw);
+        } catch (NumberFormatException ex) {
+            return BigDecimal.ZERO;
+        }
+    }
+
+    private ImportLayout detectImportLayout(Sheet sheet,
+                                            DataFormatter formatter,
+                                            FormulaEvaluator evaluator) {
+        int headerRowIndex = -1;
+        Map<String, Integer> indexMap = new HashMap<>();
+
+        int scanUntil = Math.min(sheet.getLastRowNum(), 5);
+        for (int r = 0; r <= scanUntil; r++) {
+            Row row = sheet.getRow(r);
+            if (row == null) continue;
+
+            Map<String, Integer> currentMap = new HashMap<>();
+            for (Cell cell : row) {
+                String raw = formatter.formatCellValue(cell, evaluator);
+                String normalized = normalizeHeader(raw);
+                if (normalized.isBlank()) continue;
+
+                if (normalized.contains("email")) currentMap.put("email", cell.getColumnIndex());
+                if (normalized.contains("fullname") || normalized.equals("name") || normalized.contains("hoten")) {
+                    currentMap.put("name", cell.getColumnIndex());
+                }
+                if (normalized.contains("phone") || normalized.contains("sdt") || normalized.contains("phonenumber")) {
+                    currentMap.put("phone", cell.getColumnIndex());
+                }
+                if (normalized.contains("fee") || normalized.contains("hocphi") || normalized.contains("price")) {
+                    currentMap.put("fee", cell.getColumnIndex());
+                }
+            }
+
+            if (currentMap.containsKey("email")) {
+                headerRowIndex = r;
+                indexMap = currentMap;
+                break;
+            }
+        }
+
+        int emailCol = indexMap.getOrDefault("email", 0);
+        int nameCol = indexMap.getOrDefault("name", 1);
+        int phoneCol = indexMap.getOrDefault("phone", 2);
+        int feeCol = indexMap.getOrDefault("fee", 3);
+
+        int firstDataRow = 0;
+        int lastRow = sheet.getLastRowNum();
+        for (int r = 0; r <= lastRow; r++) {
+            Row row = sheet.getRow(r);
+            if (row == null) continue;
+            boolean hasAnyValue = false;
+            for (Cell cell : row) {
+                String v = formatter.formatCellValue(cell, evaluator);
+                if (v != null && !v.trim().isBlank()) {
+                    hasAnyValue = true;
+                    break;
+                }
+            }
+            if (hasAnyValue) {
+                firstDataRow = r;
+                break;
+            }
+        }
+
+        int dataStartRow = headerRowIndex >= 0 ? headerRowIndex + 1 : firstDataRow;
+
+        return new ImportLayout(emailCol, nameCol, phoneCol, feeCol, dataStartRow);
+    }
+
+    private String normalizeHeader(String value) {
+        if (value == null) return "";
+        String noAccent = Normalizer.normalize(value, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "");
+        return noAccent.toLowerCase().replaceAll("[^a-z0-9]", "");
+    }
+
+    private String getCellString(Row row, int col,
+                                 DataFormatter dataFormatter,
+                                 FormulaEvaluator formulaEvaluator) {
+        if (col < 0) return null;
         Cell cell = row.getCell(col);
         if (cell == null) return null;
-        return switch (cell.getCellType()) {
-            case STRING  -> cell.getStringCellValue().trim();
-            case NUMERIC -> String.valueOf((long) cell.getNumericCellValue());
-            default      -> null;
-        };
+        String value = dataFormatter.formatCellValue(cell, formulaEvaluator);
+        return value != null ? value.trim() : null;
     }
+
+    private record ImportLayout(int emailCol, int nameCol, int phoneCol, int feeCol, int dataStartRow) {}
 }

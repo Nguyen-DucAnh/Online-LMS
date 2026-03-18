@@ -76,6 +76,7 @@ public class SecurityConfig {
                 .csrf(org.springframework.security.config.Customizer.withDefaults())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/admin/courses", "/admin/courses/**", "/admin/categories", "/admin/categories/**").hasAnyRole("ADMIN", "MANAGER")
+                    .requestMatchers("/admin/enrollments", "/admin/enrollments/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/manager/**").hasAnyRole("ADMIN", "MANAGER")
                         .requestMatchers("/profile/**").authenticated()

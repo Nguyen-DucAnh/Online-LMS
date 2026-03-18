@@ -161,4 +161,18 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     List<Enrollment> findAllForExport(
             @Param("courseId") Long courseId,
             @Param("status")   EnrollmentStatus status);
+
+    @Query("""
+        SELECT e FROM Enrollment e
+        JOIN FETCH e.course c
+        JOIN FETCH e.user u
+        WHERE c.instructor.id = :instructorId
+          AND (:courseId IS NULL OR c.id = :courseId)
+          AND (:status   IS NULL OR e.status = :status)
+        ORDER BY e.enrollDate DESC
+        """)
+    List<Enrollment> findAllForExportByInstructor(
+            @Param("instructorId") Long instructorId,
+            @Param("courseId") Long courseId,
+            @Param("status") EnrollmentStatus status);
 }

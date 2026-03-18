@@ -2,6 +2,7 @@ package com.online.lms.controller.admin;
 
 import com.online.lms.constant.EnrollmentViewNames;
 import com.online.lms.dto.enrollment.EnrollmentFormDTO;
+import com.online.lms.entity.Course;
 import com.online.lms.enums.EnrollmentStatus;
 import com.online.lms.service.AdminEnrollmentService;
 import com.online.lms.service.CourseService;
@@ -24,6 +25,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
+import java.util.List;
 
 @Slf4j
 @Controller
@@ -67,17 +69,17 @@ public class AdminEnrollmentController {
                     enrollmentService.findByInstructor(instructorId, courseId, statusEnum, keyword, pageable));
         }
 
-        populateListModel(model, courseId, userId, status, keyword);
+        populateListModel(model, courseId, userId, status, keyword, auth);
         return EnrollmentViewNames.ENROLLMENT_LIST;
     }
 
     // ── New form ──────────────────────────────────────────────────────────────
 
     @GetMapping("/new")
-    public String newForm(Model model) {
+    public String newForm(Authentication auth, Model model) {
         log.info("Hits GET /admin/enrollments/new");
         model.addAttribute("enrollmentForm", new EnrollmentFormDTO());
-        populateFormModel(model);
+        populateFormModel(model, auth);
         return EnrollmentViewNames.ENROLLMENT_FORM;
     }
 
@@ -88,7 +90,7 @@ public class AdminEnrollmentController {
         log.info("Hits GET /admin/enrollments/{}/edit", id);
         checkManagerAccess(id, auth);
         model.addAttribute("enrollmentForm", enrollmentService.findFormById(id));
-        populateFormModel(model);
+        populateFormModel(model, auth);
         return EnrollmentViewNames.ENROLLMENT_FORM;
     }
 
@@ -102,12 +104,15 @@ public class AdminEnrollmentController {
                        RedirectAttributes ra) {
 
         if (result.hasErrors()) {
-            populateFormModel(model);
+            populateFormModel(model, auth);
             return EnrollmentViewNames.ENROLLMENT_FORM;
         }
 
         // Manager không được edit enrollment của course người khác
         if (dto.getId() != null) checkManagerAccess(dto.getId(), auth);
+        if (dto.getId() == null && !isAdmin(auth)) {
+            checkManagerCourseAccess(dto.getCourseId(), auth);
+        }
 
         try {
             enrollmentService.save(dto);
@@ -174,10 +179,20 @@ public class AdminEnrollmentController {
     @GetMapping("/export")
     public ResponseEntity<byte[]> export(
             @RequestParam(required = false) Long courseId,
-            @RequestParam(required = false) String status) throws IOException {
+            @RequestParam(required = false) String status,
+            Authentication auth) throws IOException {
 
         log.info("GET /admin/enrollments/export");
-        byte[] data = enrollmentService.exportToCsv(courseId, parseStatus(status));
+        byte[] data;
+        if (isAdmin(auth)) {
+            data = enrollmentService.exportToCsv(courseId, parseStatus(status));
+        } else {
+            Long instructorId = userService.getCurrentUser().getId();
+            if (courseId != null) {
+                checkManagerCourseAccess(courseId, auth);
+            }
+            data = enrollmentService.exportToCsvByInstructor(instructorId, courseId, parseStatus(status));
+        }
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"enrollments.csv\"")
@@ -191,12 +206,16 @@ public class AdminEnrollmentController {
     public String importExcel(
             @RequestParam Long courseId,
             @RequestParam MultipartFile file,
+            Authentication auth,
             RedirectAttributes ra) {
 
         log.info("POST /admin/enrollments/import, courseId={}", courseId);
         if (file.isEmpty()) {
             ra.addFlashAttribute("errorMessage", "Vui lòng chọn file Excel.");
             return "redirect:/admin/enrollments";
+        }
+        if (!isAdmin(auth)) {
+            checkManagerCourseAccess(courseId, auth);
         }
         try {
             int count = enrollmentService.importFromExcel(courseId, file);
@@ -229,6 +248,20 @@ public class AdminEnrollmentController {
         }
     }
 
+    private void checkManagerCourseAccess(Long courseId, Authentication auth) {
+        if (isAdmin(auth)) return;
+        if (courseId == null) {
+            throw new org.springframework.security.access.AccessDeniedException("Course không hợp lệ.");
+        }
+        Long managerId = userService.getCurrentUser().getId();
+        Course course = courseService.findById(courseId);
+        boolean hasAccess = course.getInstructor() != null && managerId.equals(course.getInstructor().getId());
+        if (!hasAccess) {
+            throw new org.springframework.security.access.AccessDeniedException(
+                    "Bạn không có quyền thao tác enrollment cho khóa học này.");
+        }
+    }
+
     private EnrollmentStatus parseStatus(String status) {
         if (status == null || status.isBlank()) return null;
         try { return EnrollmentStatus.valueOf(status.toUpperCase()); }
@@ -236,8 +269,9 @@ public class AdminEnrollmentController {
     }
 
     private void populateListModel(Model model, Long courseId, Long userId,
-                                   String status, String keyword) {
-        model.addAttribute("courses",  courseService.findAll());
+                                   String status, String keyword,
+                                   Authentication auth) {
+        model.addAttribute("courses",  getAvailableCourses(auth));
         model.addAttribute("statuses", EnrollmentStatus.values());
         model.addAttribute("selectedCourseId", courseId);
         model.addAttribute("selectedUserId",   userId);
@@ -246,9 +280,19 @@ public class AdminEnrollmentController {
         model.addAttribute("currentPage",      "enrollments");
     }
 
-    private void populateFormModel(Model model) {
-        model.addAttribute("courses",  courseService.findAll());
+    private void populateFormModel(Model model, Authentication auth) {
+        model.addAttribute("courses",  getAvailableCourses(auth));
         model.addAttribute("statuses", EnrollmentStatus.values());
         model.addAttribute("currentPage", "enrollments");
+    }
+
+    private List<Course> getAvailableCourses(Authentication auth) {
+        if (isAdmin(auth)) {
+            return courseService.findAll();
+        }
+        Long managerId = userService.getCurrentUser().getId();
+        return courseService.findAll().stream()
+                .filter(c -> c.getInstructor() != null && managerId.equals(c.getInstructor().getId()))
+                .toList();
     }
 }

@@ -55,6 +55,9 @@ public interface AdminEnrollmentService {
     /** Export danh sách enrollment ra file CSV */
     byte[] exportToCsv(Long courseId, EnrollmentStatus status) throws IOException;
 
+    /** Manager export enrollments của courses được giao */
+    byte[] exportToCsvByInstructor(Long instructorId, Long courseId, EnrollmentStatus status) throws IOException;
+
     /** Import danh sách enrollment từ Excel */
     int importFromExcel(Long courseId, MultipartFile file) throws IOException;
 }

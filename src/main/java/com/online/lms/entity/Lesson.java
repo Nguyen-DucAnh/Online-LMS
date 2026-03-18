@@ -13,14 +13,14 @@ import lombok.*;
 @Builder
 public class Lesson extends BaseEntity {
 
-    @Column(name = "title", nullable = false, length = 255)
+    @Column(name = "title", nullable = false, columnDefinition = "NVARCHAR(255)")
     private String title;
 
-    @Column(name = "content", columnDefinition = "TEXT")
+    @Column(name = "content", columnDefinition = "NVARCHAR(MAX)")
     private String content;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "type")
+    @Column(name = "type", columnDefinition = "NVARCHAR(20)")
     private LessonType type;
 
     @Column(name = "duration")
@@ -34,7 +34,7 @@ public class Lesson extends BaseEntity {
     @Builder.Default
     private Integer orderIndex = 0;
 
-    @Column(name = "content_file_path", length = 500)
+    @Column(name = "content_file_path", columnDefinition = "NVARCHAR(500)")
     private String contentFilePath;
 
 

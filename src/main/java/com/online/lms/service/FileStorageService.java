@@ -23,6 +23,7 @@ public class FileStorageService {
         try {
             Files.createDirectories(rootLocation.resolve("videos"));
             Files.createDirectories(rootLocation.resolve("pdfs"));
+            Files.createDirectories(rootLocation.resolve("docx"));
             Files.createDirectories(rootLocation.resolve("images"));
         } catch (IOException e) {
             throw new RuntimeException("Could not create upload directories", e);

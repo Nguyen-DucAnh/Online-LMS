@@ -2,6 +2,7 @@ package com.online.lms.controller.admin;
 
 import com.online.lms.constant.CourseViewNames;
 import com.online.lms.dto.course.CourseFormDTO;
+import com.online.lms.entity.User;
 import com.online.lms.enums.CourseLevel;
 import com.online.lms.enums.CourseStatus;
 import com.online.lms.enums.UserRole;
@@ -14,13 +15,17 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Scope;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Controller
@@ -40,12 +45,16 @@ public class CourseController {
                        @RequestParam(required = false) Long categoryId,
                        @RequestParam(required = false) String status,
                        @RequestParam(defaultValue = "0") int page,
-                       @RequestParam(defaultValue = "10") int size) {
+                       @RequestParam(defaultValue = "10") int size,
+                       Principal principal) {
+
+        User currentUser = getCurrentUser(principal);
+        Long instructorId = (currentUser.getRole() == UserRole.MANAGER) ? currentUser.getId() : null;
 
         CourseStatus courseStatus = (status != null && !status.isBlank())
                 ? CourseStatus.valueOf(status) : null;
 
-        model.addAttribute("courses", courseService.search(keyword, categoryId, courseStatus,
+        model.addAttribute("courses", courseService.search(keyword, categoryId, courseStatus, instructorId,
                 PageRequest.of(page, size)));
         model.addAttribute("categories", categoryService.findAll());
         model.addAttribute("keyword", keyword);
@@ -64,8 +73,15 @@ public class CourseController {
     }
 
     @GetMapping("/{id}/edit")
-    public String showEditForm(@PathVariable Long id, Model model) {
-        model.addAttribute("courseForm", courseService.findFormById(id));
+    public String showEditForm(@PathVariable Long id, Model model, Principal principal) {
+        User currentUser = getCurrentUser(principal);
+        CourseFormDTO formDTO = courseService.findFormById(id);
+
+        if (currentUser.getRole() == UserRole.MANAGER && !currentUser.getId().equals(formDTO.getInstructorId())) {
+            return "redirect:/admin/courses";
+        }
+
+        model.addAttribute("courseForm", formDTO);
         populateFormModel(model);
         return CourseViewNames.COURSE_FORM;
     }
@@ -73,7 +89,15 @@ public class CourseController {
     @PostMapping("/save")
     public String save(@Valid @ModelAttribute("courseForm") CourseFormDTO dto,
                        BindingResult result, Model model,
-                       RedirectAttributes redirectAttributes) {
+                       RedirectAttributes redirectAttributes,
+                       Principal principal) {
+        User currentUser = getCurrentUser(principal);
+        if (currentUser.getRole() == UserRole.MANAGER) {
+            dto.setInstructorId(currentUser.getId());
+            dto.setStatus(CourseStatus.UNPUBLISHED); // Managers create unpublished by default
+            dto.setListedPrice(null); // Will be handled in service to keep original or 0
+        }
+
         if (result.hasErrors()) {
             populateFormModel(model);
             return CourseViewNames.COURSE_FORM;
@@ -87,11 +111,21 @@ public class CourseController {
     public String update(@PathVariable Long id,
                          @Valid @ModelAttribute("courseForm") CourseFormDTO dto,
                          BindingResult result, Model model,
-                         RedirectAttributes redirectAttributes) {
+                         RedirectAttributes redirectAttributes,
+                         Principal principal) {
+        User currentUser = getCurrentUser(principal);
+        CourseFormDTO existing = courseService.findFormById(id);
+
+        if (currentUser.getRole() == UserRole.MANAGER && !currentUser.getId().equals(existing.getInstructorId())) {
+            return "redirect:/admin/courses";
+        }
+
         if (result.hasErrors()) {
             populateFormModel(model);
             return CourseViewNames.COURSE_FORM;
         }
+
+        // Field restrictions for Managers are handled in CourseServiceImpl.update
         courseService.update(id, dto);
         redirectAttributes.addFlashAttribute("successMessage", "Cập nhật khóa học thành công!");
         return "redirect:/admin/courses";
@@ -113,6 +147,11 @@ public class CourseController {
     }
 
     // ===== Private helpers =====
+
+    private User getCurrentUser(Principal principal) {
+        return userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
 
     private void populateFormModel(Model model) {
         model.addAttribute("categories", categoryService.findAllActive());

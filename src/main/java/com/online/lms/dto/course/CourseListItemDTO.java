@@ -20,6 +20,7 @@ public class CourseListItemDTO {
     private String thumbnail;
     private String categoryName;
     private String instructorName;
+    private String instructorEmail;
     private BigDecimal listedPrice;
     private CourseStatus status;
     private CourseLevel level;

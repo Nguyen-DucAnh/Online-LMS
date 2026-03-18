@@ -23,6 +23,7 @@ public final class CourseMapper {
                 .thumbnail(c.getThumbnail())
                 .categoryName(c.getCategory() != null ? c.getCategory().getName() : "—")
                 .instructorName(c.getInstructor() != null ? c.getInstructor().getFullName() : "—")
+                .instructorEmail(c.getInstructor() != null ? c.getInstructor().getEmail() : null)
                 .listedPrice(c.getListedPrice())
                 .status(c.getStatus())
                 .level(c.getLevel())

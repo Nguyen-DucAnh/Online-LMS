@@ -3,11 +3,15 @@ package com.online.lms.controller.admin;
 import com.online.lms.dto.chapter.ChapterDTO;
 import com.online.lms.entity.Chapter;
 import com.online.lms.entity.Course;
+import com.online.lms.entity.User;
+import com.online.lms.enums.UserRole;
+import com.online.lms.repository.UserRepository;
 import com.online.lms.service.CourseContentService;
 import com.online.lms.service.CourseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -22,15 +26,23 @@ public class ChapterDetailsController {
 
     private final CourseContentService contentService;
     private final CourseService courseService;
+    private final UserRepository userRepository;
 
     @GetMapping("/new")
     public String showCreateForm(@PathVariable Long courseId, Model model) {
+        User currentUser = getCurrentUser();
         Course course = courseService.findById(courseId);
+        
+        if (currentUser.getRole() == UserRole.MANAGER && !course.getInstructor().getId().equals(currentUser.getId())) {
+            return "redirect:/admin/courses";
+        }
+
         ChapterDTO dto = ChapterDTO.builder()
                 .courseId(courseId)
                 .orderIndex(contentService.findChaptersByCourse(courseId).size() + 1L)
                 .build();
         model.addAttribute("course", course);
+        model.addAttribute("courseId", courseId);
         model.addAttribute("chapter", dto);
         model.addAttribute("currentPage", "courses");
         return "admin/chapter-details";
@@ -40,12 +52,19 @@ public class ChapterDetailsController {
     public String showEditForm(@PathVariable Long courseId,
                                @PathVariable Long chapterId,
                                Model model) {
+        User currentUser = getCurrentUser();
         Course course = courseService.findById(courseId);
+        
+        if (currentUser.getRole() == UserRole.MANAGER && !course.getInstructor().getId().equals(currentUser.getId())) {
+            return "redirect:/admin/courses";
+        }
+
         ChapterDTO chapter = contentService.findChapterById(chapterId);
         if (!chapter.getCourseId().equals(courseId)) {
             return "redirect:/admin/courses/" + courseId + "/content";
         }
         model.addAttribute("course", course);
+        model.addAttribute("courseId", courseId);
         model.addAttribute("chapter", chapter);
         model.addAttribute("currentPage", "courses");
         return "admin/chapter-details";
@@ -60,6 +79,7 @@ public class ChapterDetailsController {
         dto.setCourseId(courseId);
         if (bindingResult.hasErrors()) {
             model.addAttribute("course", courseService.findById(courseId));
+            model.addAttribute("courseId", courseId);
             model.addAttribute("currentPage", "courses");
             return "admin/chapter-details";
         }
@@ -75,15 +95,27 @@ public class ChapterDetailsController {
                                 BindingResult bindingResult,
                                 Model model,
                                 RedirectAttributes ra) {
+        User currentUser = getCurrentUser();
+        Course course = courseService.findById(courseId);
+        if (currentUser.getRole() == UserRole.MANAGER && !course.getInstructor().getId().equals(currentUser.getId())) {
+            return "redirect:/admin/courses";
+        }
+
         dto.setId(chapterId);
         dto.setCourseId(courseId);
         if (bindingResult.hasErrors()) {
             model.addAttribute("course", courseService.findById(courseId));
+            model.addAttribute("courseId", courseId);
             model.addAttribute("currentPage", "courses");
             return "admin/chapter-details";
         }
         contentService.saveChapter(dto);
         ra.addFlashAttribute("successMessage", "Đã cập nhật chương!");
         return "redirect:/admin/courses/" + courseId + "/content";
+    }
+
+    private User getCurrentUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        return userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User not found"));
     }
 }

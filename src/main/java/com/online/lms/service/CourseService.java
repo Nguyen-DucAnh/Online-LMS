@@ -11,7 +11,7 @@ import java.util.List;
 
 public interface CourseService {
 
-    Page<CourseListItemDTO> search(String keyword, Long categoryId, CourseStatus status, Pageable pageable);
+    Page<CourseListItemDTO> search(String keyword, Long categoryId, CourseStatus status, Long instructorId, Pageable pageable);
 
     CourseFormDTO findFormById(Long id);
 

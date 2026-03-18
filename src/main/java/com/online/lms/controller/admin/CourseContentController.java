@@ -1,6 +1,6 @@
 package com.online.lms.controller.admin;
 
-import com.online.lms.constant.CourseViewNames;
+import com.online.lms.dto.chapter.ChapterDTO;
 import com.online.lms.enums.LessonType;
 import com.online.lms.service.CourseContentService;
 import com.online.lms.service.CourseService;
@@ -12,6 +12,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.util.List;
 
 @Slf4j
 @Controller
@@ -26,11 +28,18 @@ public class CourseContentController {
 
     @GetMapping("/content")
     public String content(@PathVariable Long courseId, Model model) {
+        List<ChapterDTO> chapters = contentService.findChaptersByCourse(courseId);
+        long totalLessons = chapters.stream()
+                .mapToLong(ch -> ch.getLessons().size())
+                .sum();
+
         model.addAttribute("course", courseService.findById(courseId));
-        model.addAttribute("chapters", contentService.findChaptersByCourse(courseId));
+        model.addAttribute("courseId", courseId);
+        model.addAttribute("chapters", chapters);
+        model.addAttribute("totalLessons", totalLessons);
         model.addAttribute("lessonTypes", LessonType.values());
         model.addAttribute("currentPage", "courses");
-        return CourseViewNames.COURSE_CONTENT;
+        return "admin/courses/content";
     }
 
     @PostMapping("/chapters/{chapterId}/delete")

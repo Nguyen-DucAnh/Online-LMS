@@ -30,4 +30,10 @@ public class LessonDTO {
     private Integer orderIndex;
 
     private Long chapterId;
+
+    /** Path to uploaded video/PDF file */
+    private String contentFilePath;
+
+    /** Preview lessons can be watched without enrollment */
+    private Boolean previewEnabled;
 }

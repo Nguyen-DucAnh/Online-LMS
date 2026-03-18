@@ -5,7 +5,7 @@ import com.online.lms.enums.UserRole;
 import com.online.lms.enums.UserStatus;
 import com.online.lms.service.UserService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -17,10 +17,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/admin/users")
+@RequiredArgsConstructor
 public class UserController {
-
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
 
 
     @GetMapping
@@ -89,13 +88,7 @@ public class UserController {
 
     @GetMapping("/toggle/{id}")
     public String toggleStatus(@PathVariable Long id) {
-        User user = userService.getUserById(id);
-        if (user.getStatus() == UserStatus.ACTIVE) {
-            user.setStatus(UserStatus.PENDING);
-        } else {
-            user.setStatus(UserStatus.ACTIVE);
-        }
-        userService.saveUserFromForm(user);
+        userService.toggleStatus(id);
         return "redirect:/admin/users";
     }
 

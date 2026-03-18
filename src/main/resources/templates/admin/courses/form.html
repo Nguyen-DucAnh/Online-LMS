@@ -72,7 +72,7 @@
           <!-- Category + Instructor -->
           <div class="row g-3">
             <div class="col-md-6">
-              <label class="form-label">Danh mục <span class="text-danger">*</span></label>
+              <label class="form-label">Category <span class="text-danger">*</span></label>
               <select class="form-select" th:field="*{categoryId}"
                       th:classappend="${#fields.hasErrors('categoryId')} ? ' is-invalid' : ''">
                 <option value="">— Chọn danh mục —</option>
@@ -83,20 +83,28 @@
               <div class="invalid-feedback" th:errors="*{categoryId}"></div>
             </div>
             <div class="col-md-6">
-              <label class="form-label">Giảng viên</label>
-              <select class="form-select" th:field="*{instructorId}">
+              <label class="form-label">Manager</label>
+              <select class="form-select" th:field="*{instructorId}"
+                      sec:authorize="hasRole('MANAGER')" disabled>
+                <option th:each="ins : ${instructors}"
+                        th:value="${ins.id}"
+                        th:text="${ins.fullName}"></option>
+              </select>
+              <select class="form-select" th:field="*{instructorId}"
+                      sec:authorize="hasRole('ADMIN')">
                 <option value="">— Chọn giảng viên —</option>
                 <option th:each="ins : ${instructors}"
                         th:value="${ins.id}"
                         th:text="${ins.fullName}"></option>
               </select>
+              <input type="hidden" th:field="*{instructorId}" sec:authorize="hasRole('MANAGER')"/>
             </div>
           </div>
 
           <!-- Level + Duration -->
           <div class="row g-3 mt-1">
             <div class="col-md-6">
-              <label class="form-label">Trình độ</label>
+              <label class="form-label">Level</label>
               <select class="form-select" th:field="*{level}">
                 <option value="">— Chọn trình độ —</option>
                 <option th:each="lv : ${levels}"
@@ -105,11 +113,10 @@
               </select>
             </div>
             <div class="col-md-6">
-              <label class="form-label">Thời lượng (phút)</label>
+              <label class="form-label">Duration*</label>
               <div class="input-group">
-                <span class="input-group-text"><i class="fas fa-clock text-muted"></i></span>
                 <input type="number" class="form-control" th:field="*{duration}"
-                       placeholder="120" min="1"/>
+                       placeholder="120" min="1" required/>
               </div>
             </div>
           </div>
@@ -117,33 +124,32 @@
           <!-- Price -->
           <div class="row g-3 mt-1">
             <div class="col-md-6">
-              <label class="form-label">Giá niêm yết</label>
+              <label class="form-label">Listed Price*</label>
               <div class="input-group">
-                <span class="input-group-text">$</span>
                 <input type="number" step="0.01" class="form-control"
-                       th:field="*{listedPrice}" placeholder="0.00" min="0"
+                       th:field="*{listedPrice}" placeholder="0.00" min="0" required
+                       th:disabled="${#authorization.expression('hasRole(''MANAGER'')')}"
                        th:classappend="${#fields.hasErrors('listedPrice')} ? ' is-invalid' : ''"/>
                 <div class="invalid-feedback" th:errors="*{listedPrice}"></div>
               </div>
+              <input type="hidden" th:field="*{listedPrice}" sec:authorize="hasRole('MANAGER')"/>
             </div>
             <div class="col-md-6">
-              <label class="form-label">Giá khuyến mãi</label>
+              <label class="form-label">Sale Price</label>
               <div class="input-group">
-                <span class="input-group-text">$</span>
                 <input type="number" step="0.01" class="form-control"
                        th:field="*{salePrice}" placeholder="0.00" min="0"
+                       th:disabled="${#authorization.expression('hasRole(''MANAGER'')')}"
                        th:classappend="${#fields.hasErrors('salePrice')} ? ' is-invalid' : ''"/>
                 <div class="invalid-feedback" th:errors="*{salePrice}"></div>
               </div>
+              <input type="hidden" th:field="*{salePrice}" sec:authorize="hasRole('MANAGER')"/>
             </div>
           </div>
         </div>
 
         <!-- Description -->
         <div class="card p-4">
-          <h6 class="fw-700 mb-3 d-flex align-items-center gap-2" style="color:var(--dark);">
-            <i class="fas fa-align-left" style="color:var(--purple);"></i> Mô tả khóa học
-          </h6>
           <textarea id="description" th:field="*{description}"
                     class="form-control" rows="6"
                     placeholder="Mô tả chi tiết nội dung và những gì học viên sẽ học được..."></textarea>
@@ -155,15 +161,16 @@
 
         <!-- Thumbnail -->
         <div class="card p-4 mb-4">
-          <h6 class="fw-700 mb-3 d-flex align-items-center gap-2" style="color:var(--dark);">
-            <i class="fas fa-image" style="color:var(--purple);"></i> Ảnh bìa (Thumbnail)
-          </h6>
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-700 mb-0" style="color:var(--dark);">Thumbnail</h6>
+            <a href="javascript:void(0)" class="text-primary text-decoration-none small" onclick="document.getElementById('thumbFile').click()">Change</a>
+          </div>
 
           <!-- Preview existing thumbnail -->
           <img id="thumbPreview"
                th:src="${courseForm.thumbnail}"
                th:style="${courseForm.thumbnail != null and !#strings.isEmpty(courseForm.thumbnail)}
-                           ? 'display:block;' : 'display:none;'"
+                           ? 'display:block; width:100%; border-radius:4px;' : 'display:none;'"
                alt="thumbnail preview"/>
 
           <!-- Placeholder when no image -->
@@ -173,44 +180,40 @@
                            ? 'display:none;' : 'display:flex;'"
                onclick="document.getElementById('thumbFile').click()">
             <i class="fas fa-cloud-upload-alt fa-2x mb-2"></i>
-            <span class="small fw-600">Nhấn để tải ảnh lên</span>
-            <span class="text-muted" style="font-size:.72rem;">PNG, JPG · Tối đa 2MB</span>
+            <span class="small fw-600">Click to upload image</span>
           </div>
 
           <input type="file" id="thumbFile" class="d-none" accept="image/*"
                  onchange="previewThumb(this)"/>
 
           <div class="mt-2">
-            <label class="form-label mb-1 small">Hoặc nhập URL ảnh</label>
-            <input type="text" class="form-control" th:field="*{thumbnail}"
-                   placeholder="https://example.com/image.jpg"
+            <input type="text" class="form-control form-control-sm" th:field="*{thumbnail}"
+                   placeholder="Or enter image URL"
                    oninput="syncThumbUrl(this.value)"/>
           </div>
         </div>
 
         <!-- Status & Flags -->
         <div class="card p-4 mb-4">
-          <h6 class="fw-700 mb-3 d-flex align-items-center gap-2" style="color:var(--dark);">
-            <i class="fas fa-toggle-on" style="color:var(--purple);"></i> Trạng thái
-          </h6>
+          <h6 class="fw-700 mb-3" style="color:var(--dark);">Status</h6>
 
-          <!-- Only Admin can change publish status -->
-          <div sec:authorize="hasRole('ADMIN')" class="mb-3">
-            <label class="form-label">Trạng thái xuất bản</label>
-            <select class="form-select" th:field="*{status}">
-              <option th:each="s : ${courseStatuses}"
-                      th:value="${s}"
-                      th:text="${s.name()}"></option>
-            </select>
-          </div>
+          <div class="d-flex gap-4">
+            <div class="form-check">
+              <input type="checkbox" class="form-check-input" id="publishCheck"
+                     th:checked="${courseForm.status != null and courseForm.status.name() == 'PUBLISHED'}"
+                     th:disabled="${#authorization.expression('hasRole(''MANAGER'')')}"
+                     onchange="this.nextElementSibling.value = this.checked ? 'PUBLISHED' : 'UNPUBLISHED'"/>
+              <label class="form-check-label" for="publishCheck">Published</label>
+              <input type="hidden" th:field="*{status}"/>
+            </div>
 
-          <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox"
-                   id="featuredCheck" th:field="*{featured}" role="switch"/>
-            <label class="form-check-label fw-600" for="featuredCheck">
-              ⭐ Đánh dấu nổi bật
-            </label>
-            <div class="text-muted small mt-1">Khóa học sẽ được hiển thị ở trang chủ</div>
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox"
+                     id="featuredCheck" th:field="*{featured}"/>
+              <label class="form-check-label" for="featuredCheck">
+                Featured Post
+              </label>
+            </div>
           </div>
         </div>
 

@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-@Getter
 public enum UserStatus {
     ACTIVE("Active", "The user is active and can use the system normally."),
     PENDING("Pending", "The user has been pending."),
@@ -19,6 +18,14 @@ public enum UserStatus {
     UserStatus(String displayName, String description) {
         this.displayName = displayName;
         this.description = description;
+    }
+
+    public String getDisplayName() {
+        return displayName;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public static UserStatus fromString(String status) {

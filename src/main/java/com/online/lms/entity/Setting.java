@@ -14,19 +14,19 @@ import lombok.*;
 @Builder
 public class Setting extends BaseEntity {
 
-    @Column(name = "name", nullable = false, length = 20)
+    @Column(name = "name", nullable = false, columnDefinition = "NVARCHAR(20)")
     private String name;
 
-    @Column(name = "value", length = 100)
+    @Column(name = "value", columnDefinition = "NVARCHAR(100)")
     private String value;
 
     @Column(name = "priority")
     private Integer priority;
 
-    @Column(name = "status")
+    @Column(name = "status", columnDefinition = "NVARCHAR(50)")
     private String status;
 
-    @Column(name = "description", length = 200)
+    @Column(name = "description", columnDefinition = "NVARCHAR(200)")
     private String description;
 
 

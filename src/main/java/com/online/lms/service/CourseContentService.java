@@ -9,6 +9,12 @@ public interface CourseContentService {
 
     List<ChapterDTO> findChaptersByCourse(Long courseId);
 
+    List<ChapterDTO> findActiveChaptersByCourse(Long courseId);
+
+    LessonDTO findActiveLessonByCourseAndId(Long courseId, Long lessonId);
+
+    LessonDTO findFirstActiveLessonByCourse(Long courseId);
+
     void saveChapter(ChapterDTO dto);
 
     void deleteChapter(Long chapterId);

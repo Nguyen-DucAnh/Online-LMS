@@ -47,6 +47,16 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
     Optional<Enrollment> findByUser_IdAndCourse_Id(Long userId, Long courseId);
 
+    @Query("""
+        SELECT e FROM Enrollment e
+        JOIN FETCH e.course c
+        WHERE e.id = :enrollmentId
+          AND e.user.id = :userId
+          AND e.status = com.online.lms.enums.EnrollmentStatus.APPROVED
+        """)
+    Optional<Enrollment> findApprovedByIdAndUserId(@Param("enrollmentId") Long enrollmentId,
+                                                   @Param("userId") Long userId);
+
     // ── Admin: Enrollment List ────────────────────────────────────────────────
     // QUAN TRỌNG: KHÔNG có ORDER BY trong JPQL khi dùng Pageable
     // Sort được truyền vào qua Pageable từ controller → Spring Data tự thêm

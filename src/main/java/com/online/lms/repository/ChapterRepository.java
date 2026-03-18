@@ -14,5 +14,14 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
     @Query("SELECT ch FROM Chapter ch LEFT JOIN FETCH ch.lessons l WHERE ch.course.id = :courseId ORDER BY ch.orderIndex ASC")
     List<Chapter> findByCourseIdWithLessons(@Param("courseId") Long courseId);
 
+        @Query("""
+                        SELECT ch FROM Chapter ch
+                        LEFT JOIN FETCH ch.lessons l
+                        WHERE ch.course.id = :courseId
+                            AND (l IS NULL OR l.status = true)
+                        ORDER BY ch.orderIndex ASC
+                        """)
+        List<Chapter> findActiveByCourseIdWithActiveLessons(@Param("courseId") Long courseId);
+
     Long countByCourseId(Long courseId);
 }

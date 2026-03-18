@@ -126,7 +126,7 @@
                         <td class="pe-4">
                             <!-- APPROVED → "Access" -->
                             <a th:if="${e.status.name() == 'APPROVED'}"
-                               th:href="@{/courses/{id}(id=${e.courseId})}"
+                               th:href="@{/lesson-viewer/{id}(id=${e.id})}"
                                class="text-success fw-semibold small text-decoration-none">
                                 Access
                             </a>

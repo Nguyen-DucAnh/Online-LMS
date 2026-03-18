@@ -24,4 +24,6 @@ public interface EnrollmentService {
      * Dùng cho Lesson Viewer access control.
      */
     boolean hasAccessToCourse(Long courseId);
+
+    Long getApprovedCourseIdByEnrollmentId(Long enrollmentId);
 }

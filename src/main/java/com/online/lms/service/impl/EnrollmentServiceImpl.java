@@ -64,6 +64,16 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 currentUser.getId(), courseId, EnrollmentStatus.APPROVED);
     }
 
+    @Override
+    public Long getApprovedCourseIdByEnrollmentId(Long enrollmentId) {
+                User currentUser = getCurrentUser();
+                Enrollment enrollment = enrollmentRepository
+                .findApprovedByIdAndUserId(enrollmentId, currentUser.getId())
+                                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Không tìm thấy enrollment đã duyệt id=" + enrollmentId));
+                return enrollment.getCourse().getId();
+        }
+
     // ─── Helpers ──────────────────────────────────────────────────────────────
 
     /**

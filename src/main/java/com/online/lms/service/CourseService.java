@@ -7,6 +7,8 @@ import com.online.lms.enums.CourseStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
+
 public interface CourseService {
 
     Page<CourseListItemDTO> search(String keyword, Long categoryId, CourseStatus status, Pageable pageable);
@@ -22,4 +24,10 @@ public interface CourseService {
     void toggleStatus(Long id);
 
     void deleteById(Long id);
+
+    /**
+     * Lấy tất cả courses (dùng cho dropdown trong form).
+     * Thêm mới — AdminEnrollmentController cần.
+     */
+    List<Course> findAll();
 }

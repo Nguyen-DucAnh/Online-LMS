@@ -92,23 +92,57 @@
                             <span class="badge bg-primary-light text-primary px-3 py-2 rounded-pill small"
                                 th:text="${currentLesson.type}">VIDEO</span>
                             <span class="text-muted small"><i class="fas fa-clock me-1"></i> <span
-                                    th:text="${currentLesson.duration + ' mins'}">15 mins</span></span>
+                                    th:text="${currentLesson.duration != null ? currentLesson.duration + ' mins' : 'N/A'}">15 mins</span></span>
                         </div>
                         <h2 class="fw-bold display-6 mb-3" th:text="${currentLesson.title}">Lesson Title</h2>
                     </div>
 
                     <!-- Video / Content Placeholder -->
                     <div class="lesson-content-area mb-5">
-                        <!-- If it's a video lesson and has a content link -->
-                        <div th:if="${currentLesson.type.name() == 'VIDEO' and currentLesson.content != null and currentLesson.content.contains('youtube.com')}"
-                            class="video-container shadow-lg mb-4">
-                            <!-- Simple YouTube embed logic -->
-                            <iframe th:src="${currentLesson.content.replace('watch?v=', 'embed/')}" frameborder="0"
-                                allowfullscreen></iframe>
+                        <!-- Video lesson -->
+                        <div th:if="${currentLesson.type != null and currentLesson.type.name() == 'VIDEO'}"
+                            class="mb-4">
+                            <div th:if="${currentLesson.content != null and currentLesson.content.contains('youtube.com')}"
+                                class="video-container shadow-lg mb-3">
+                                <iframe th:src="${currentLesson.content.replace('watch?v=', 'embed/')}" frameborder="0"
+                                    allowfullscreen></iframe>
+                            </div>
+
+                            <div th:if="${currentLesson.content != null and !currentLesson.content.contains('youtube.com')}"
+                                class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                                <video controls style="width: 100%; max-height: 70vh;" th:src="${currentLesson.content}">
+                                    Your browser does not support video playback.
+                                </video>
+                            </div>
+
+                            <div th:if="${currentLesson.content == null or #strings.isEmpty(currentLesson.content)}"
+                                class="alert alert-warning">
+                                Video lesson does not have a valid source URL.
+                            </div>
                         </div>
 
-                        <!-- General Content (Text/HTML) -->
-                        <div class="card border-0 shadow-sm rounded-4">
+                        <!-- PDF lesson -->
+                        <div th:if="${currentLesson.type != null and currentLesson.type.name() == 'PDF'}"
+                            class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+                            <div th:if="${currentLesson.content != null and !#strings.isEmpty(currentLesson.content)}"
+                                class="ratio" style="--bs-aspect-ratio: 70%;">
+                                <iframe th:src="${currentLesson.content}" style="border:0; width:100%; height:100%;"
+                                    title="PDF Viewer"></iframe>
+                            </div>
+                            <div class="card-body" th:if="${currentLesson.content != null and !#strings.isEmpty(currentLesson.content)}">
+                                <a th:href="${currentLesson.content}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-up-right-from-square me-2"></i>Open PDF in new tab
+                                </a>
+                            </div>
+                            <div th:if="${currentLesson.content == null or #strings.isEmpty(currentLesson.content)}"
+                                class="card-body">
+                                <div class="alert alert-warning mb-0">PDF lesson does not have a valid source URL.</div>
+                            </div>
+                        </div>
+
+                        <!-- Text / rich content lesson -->
+                        <div th:if="${currentLesson.type == null or currentLesson.type.name() == 'TEXT'}"
+                            class="card border-0 shadow-sm rounded-4">
                             <div class="card-body p-4 p-md-5">
                                 <div class="lh-lg text-dark"
                                     th:utext="${currentLesson.content ?: 'This lesson has no textual content. Please follow the instructions provided.'}">

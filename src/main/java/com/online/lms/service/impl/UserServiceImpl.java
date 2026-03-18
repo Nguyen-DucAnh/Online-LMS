@@ -2,12 +2,14 @@ package com.online.lms.service.impl;
 
 import com.online.lms.dto.request.user.ChangePasswordRequestDTO;
 import com.online.lms.dto.request.user.UpdateProfileRequestDTO;
+import com.online.lms.dto.request.user.UserRequestDTO;
 import com.online.lms.entity.User;
 import com.online.lms.enums.UserRole;
 import com.online.lms.enums.UserStatus;
 import com.online.lms.repository.UserRepository;
 import com.online.lms.service.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.mail.SimpleMailMessage;
@@ -20,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
@@ -127,6 +130,65 @@ public class UserServiceImpl implements UserService {
         if (!request.getNewPassword().equals(request.getConfirmPassword()))
             throw new RuntimeException("Passwords do not match");
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void createNewUser(UserRequestDTO dto) {
+        User user = new User();
+        user.setFullName(dto.getFullName());
+        user.setEmail(dto.getEmail());
+        user.setPhone(dto.getPhone());
+        user.setAddress(dto.getAddress());
+        user.setRole(UserRole.valueOf(dto.getRole().toUpperCase()));
+        user.setStatus(UserStatus.valueOf(dto.getStatus().toUpperCase()));
+
+        // Sinh mật khẩu ngẫu nhiên
+        String randomPassword = UUID.randomUUID().toString().substring(0, 8);
+        user.setPassword(passwordEncoder.encode(randomPassword));
+
+        userRepository.save(user);
+
+        // Gửi mail
+        try {
+            SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
+            simpleMailMessage.setTo(user.getEmail());
+            simpleMailMessage.setSubject("Welcome to OLMS - Your Account Has Been Created");
+            simpleMailMessage.setText("Hello " + user.getFullName() + ",\n\n"
+                    + "Your account has been successfully created.\n"
+                    + "Here are your login details:\n"
+                    + "Email: " + user.getEmail() + "\n"
+                    + "Password: " + randomPassword + "\n\n"
+                    + "Please log in and change your password as soon as possible.\n"
+                    + "Best regards,\nOLMS Admin Team");
+            mailSender.send(simpleMailMessage);
+        } catch (Exception e) {
+            log.error("Lỗi gửi mail: {}", e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public void updateUser(Long id, UserRequestDTO dto) {
+        User user = getUserById(id);
+        user.setFullName(dto.getFullName());
+        user.setPhone(dto.getPhone());
+        user.setAddress(dto.getAddress());
+        user.setRole(UserRole.valueOf(dto.getRole().toUpperCase()));
+        user.setStatus(UserStatus.valueOf(dto.getStatus().toUpperCase()));
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void toggleStatus(Long id) {
+        User user = getUserById(id);
+        if (user.getStatus() == UserStatus.ACTIVE) {
+            user.setStatus(UserStatus.SUSPENDED);
+        } else {
+            user.setStatus(UserStatus.ACTIVE);
+        }
         userRepository.save(user);
     }
 }

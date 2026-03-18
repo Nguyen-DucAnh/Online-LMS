@@ -2,6 +2,7 @@ package com.online.lms.service;
 
 import com.online.lms.dto.request.user.ChangePasswordRequestDTO;
 import com.online.lms.dto.request.user.UpdateProfileRequestDTO;
+import com.online.lms.dto.request.user.UserRequestDTO;
 import com.online.lms.entity.User;
 import com.online.lms.enums.UserRole;
 import com.online.lms.enums.UserStatus;
@@ -28,6 +29,12 @@ public interface UserService {
     void saveUserFromForm(User user);
 
     void deleteUser(Long id);
+
+    void createNewUser(UserRequestDTO dto);
+
+    void updateUser(Long id, UserRequestDTO dto);
+
+    void toggleStatus(Long id);
 
     boolean existsByEmail(String email);
 }

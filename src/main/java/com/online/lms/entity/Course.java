@@ -18,13 +18,13 @@ import java.util.List;
 @Builder
 public class Course extends BaseEntity {
 
-    @Column(name = "title", nullable = false, length = 255)
+    @Column(name = "title", nullable = false, columnDefinition = "NVARCHAR(255)")
     private String title;
 
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
-    @Column(name = "thumbnail", length = 500)
+    @Column(name = "thumbnail", columnDefinition = "NVARCHAR(500)")
     private String thumbnail;
 
     @Column(name = "listed_price", precision = 10, scale = 2)

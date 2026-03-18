@@ -21,16 +21,17 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             WHERE (:keyword IS NULL OR LOWER(c.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
               AND (:categoryId IS NULL OR cat.id = :categoryId)
               AND (:status IS NULL OR c.status = :status)
+              AND (:instructorId IS NULL OR ins.id = :instructorId)
             """)
     Page<Course> search(
             @Param("keyword") String keyword,
             @Param("categoryId") Long categoryId,
             @Param("status") CourseStatus status,
+            @Param("instructorId") Long instructorId,
             Pageable pageable
     );
 
     List<Course> findTop5ByOrderByIdDesc();
-
 
     long countByStatus(CourseStatus status);
 }

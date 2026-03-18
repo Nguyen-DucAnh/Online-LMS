@@ -2,6 +2,8 @@ package com.online.lms.service;
 
 import com.online.lms.dto.chapter.ChapterDTO;
 import com.online.lms.dto.chapter.LessonDTO;
+import com.online.lms.entity.Chapter;
+import com.online.lms.entity.Lesson;
 
 import java.util.List;
 
@@ -26,4 +28,10 @@ public interface CourseContentService {
     void deleteLesson(Long lessonId);
 
     LessonDTO findLessonById(Long lessonId);
+
+    ChapterDTO findChapterById(Long chapterId);
+
+    Chapter findChapterEntity(Long chapterId, Long courseId);
+
+    Lesson findLessonEntity(Long lessonId, Long chapterId);
 }

@@ -1,7 +1,26 @@
 server:
   port: 8080
+  tomcat:
+    max-http-form-post-size: 500MB
+    max-swallow-size: 500MB
+  error:
+    include-message: always
+    include-stacktrace: always
+    include-exception: true
 
 spring:
+  web:
+    tomcat:
+      max-http-form-post-size: 500MB
+      max-swallow-size: 500MB
+    multipart:
+      enabled: true
+      max-file-size: 500MB
+      max-request-size: 500MB
+    error:
+      include-message: always
+      include-stacktrace: always
+      include-exception: true
   datasource:
     url: ${SPRING_DATASOURCE_URL:jdbc:sqlserver://DUCANH:1433;databaseName=HSP_Project;encrypt=true;trustServerCertificate=true}
     username: ${SPRING_DATASOURCE_USERNAME:sa}
@@ -15,6 +34,12 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.SQLServerDialect
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 500MB
+      max-request-size: 500MB
 
   thymeleaf:
     cache: false

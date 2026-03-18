@@ -20,6 +20,7 @@ public class SettingController {
     @Autowired
     private SettingService settingService;
 
+
     @GetMapping
     public String listSettings(
             @RequestParam(required = false) Long typeId,
@@ -31,16 +32,24 @@ public class SettingController {
         Pageable pageable = PageRequest.of(page, 10, Sort.by("priority").ascending());
         Page<Setting> settingPage = settingService.findAll(typeId, status, keyword, pageable);
 
-        model.addAttribute("settings", settingPage);
+        model.addAttribute("settingPage", settingPage);
         model.addAttribute("types", settingService.getAllTypes());
+
+        model.addAttribute("selectedTypeId", typeId);
+        model.addAttribute("selectedStatus", status);
+        model.addAttribute("keyword", keyword);
+
         return "admin/setting/setting-list";
     }
+
 
     @GetMapping("/status/{id}")
     public String toggleStatus(@PathVariable Long id) {
         settingService.toggleStatus(id);
         return "redirect:/admin/settings";
     }
+
+
     @GetMapping("/new")
     public String showAddForm(Model model) {
         model.addAttribute("setting", new Setting());
@@ -48,24 +57,28 @@ public class SettingController {
         return "admin/setting/setting-detail";
     }
 
+
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
-        Setting setting = settingService.findById(id);
-        model.addAttribute("setting", setting);
+        model.addAttribute("setting", settingService.findById(id));
         model.addAttribute("types", settingService.getActiveMasterTypes());
         return "admin/setting/setting-detail";
     }
+
 
     @PostMapping("/save")
     public String saveSetting(@Valid @ModelAttribute("setting") Setting setting,
                               BindingResult result, Model model) {
 
-        // 1. Kiểm tra validation cơ bản (Annotation trong Entity/DTO)
+
+        if (setting.getType() != null && setting.getType().getId() == null) {
+            setting.setType(null);
+        }
+
         if (result.hasErrors()) {
             model.addAttribute("types", settingService.getActiveMasterTypes());
             return "admin/setting/setting-detail";
         }
-
 
         if (settingService.isNameDuplicate(setting.getId(), setting.getName(), setting.getType())) {
             result.rejectValue("name", "error.setting", "Name already exists in this type");

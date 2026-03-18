@@ -20,13 +20,13 @@ public class SettingServiceImpl implements SettingService {
 
     @Override
     public Page<Setting> findAll(Long typeId, String status, String keyword, Pageable pageable) {
-        // Giả sử bạn đã viết Custom Query trong Repository hoặc dùng Example
+
         return settingRepository.findAllCustom(typeId, status, keyword, pageable);
     }
 
     @Override
     public List<Setting> getAllTypes() {
-        // Lấy các bản ghi không có cha (Type ID là null) để làm danh mục phân loại
+
         return settingRepository.findAll().stream()
                 .filter(s -> s.getType() == null)
                 .collect(Collectors.toList());
@@ -34,7 +34,7 @@ public class SettingServiceImpl implements SettingService {
 
     @Override
     public List<Setting> getActiveMasterTypes() {
-        // Lấy các Master Type đang ở trạng thái Active cho dropdown trang Detail
+
         return settingRepository.findAll().stream()
                 .filter(s -> s.getType() == null && "Active".equalsIgnoreCase(s.getStatus()))
                 .collect(Collectors.toList());
@@ -42,7 +42,7 @@ public class SettingServiceImpl implements SettingService {
 
     @Override
     public boolean isNameDuplicate(Long id, String name, Setting type) {
-        // Ràng buộc: Tên là duy nhất trong cùng một Type được chọn
+
         return settingRepository.findAll().stream()
                 .anyMatch(s -> s.getName().equalsIgnoreCase(name)
                         && ( (s.getType() == null && type == null) || (s.getType() != null && s.getType().equals(type)) )
@@ -64,7 +64,7 @@ public class SettingServiceImpl implements SettingService {
     @Override
     @Transactional
     public Setting save(Setting setting) {
-        // Logic bổ sung trước khi lưu có thể đặt ở đây
+
         return settingRepository.save(setting);
     }
 

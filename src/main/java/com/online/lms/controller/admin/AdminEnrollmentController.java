@@ -272,6 +272,12 @@ public class AdminEnrollmentController {
                                    String status, String keyword,
                                    Authentication auth) {
         model.addAttribute("courses",  getAvailableCourses(auth));
+        if (isAdmin(auth)) {
+            model.addAttribute("users", enrollmentService.findFilterUsers());
+        } else {
+            Long instructorId = userService.getCurrentUser().getId();
+            model.addAttribute("users", enrollmentService.findFilterUsersByInstructor(instructorId));
+        }
         model.addAttribute("statuses", EnrollmentStatus.values());
         model.addAttribute("selectedCourseId", courseId);
         model.addAttribute("selectedUserId",   userId);

@@ -1,6 +1,7 @@
 package com.online.lms.repository;
 
 import com.online.lms.entity.Enrollment;
+import com.online.lms.entity.User;
 import com.online.lms.enums.EnrollmentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -70,6 +71,12 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
           AND (:status   IS NULL OR e.status = :status)
           AND (:keyword  IS NULL
                OR LOWER(e.fullName) LIKE LOWER(CONCAT('%',:keyword,'%'))
+             OR LOWER(FUNCTION('TRANSLATE', e.fullName,
+               'áàảãạăắằẳẵặâấầẩẫậđéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵ',
+               'aaaaaaaaaaaaaaaaadeeeeeeeeeeeiiiiiooooooooooooooooouuuuuuuuuuuyyyyy'))
+              LIKE CONCAT('%', LOWER(FUNCTION('TRANSLATE', :keyword,
+               'áàảãạăắằẳẵặâấầẩẫậđéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵ',
+               'aaaaaaaaaaaaaaaaadeeeeeeeeeeeiiiiiooooooooooooooooouuuuuuuuuuuyyyyy')), '%')
                OR LOWER(e.email)    LIKE LOWER(CONCAT('%',:keyword,'%'))
                OR LOWER(c.title)    LIKE LOWER(CONCAT('%',:keyword,'%')))
         """,
@@ -81,6 +88,12 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
           AND (:status   IS NULL OR e.status = :status)
           AND (:keyword  IS NULL
                OR LOWER(e.fullName) LIKE LOWER(CONCAT('%',:keyword,'%'))
+               OR LOWER(FUNCTION('TRANSLATE', e.fullName,
+                   'áàảãạăắằẳẵặâấầẩẫậđéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵ',
+                   'aaaaaaaaaaaaaaaaadeeeeeeeeeeeiiiiiooooooooooooooooouuuuuuuuuuuyyyyy'))
+                  LIKE CONCAT('%', LOWER(FUNCTION('TRANSLATE', :keyword,
+                   'áàảãạăắằẳẵặâấầẩẫậđéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵ',
+                   'aaaaaaaaaaaaaaaaadeeeeeeeeeeeiiiiiooooooooooooooooouuuuuuuuuuuyyyyy')), '%')
                OR LOWER(e.email)    LIKE LOWER(CONCAT('%',:keyword,'%'))
                OR LOWER(c.title)    LIKE LOWER(CONCAT('%',:keyword,'%')))
         """)
@@ -103,6 +116,12 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
           AND (:status   IS NULL OR e.status = :status)
           AND (:keyword  IS NULL
                OR LOWER(e.fullName) LIKE LOWER(CONCAT('%',:keyword,'%'))
+             OR LOWER(FUNCTION('TRANSLATE', e.fullName,
+               'áàảãạăắằẳẵặâấầẩẫậđéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵ',
+               'aaaaaaaaaaaaaaaaadeeeeeeeeeeeiiiiiooooooooooooooooouuuuuuuuuuuyyyyy'))
+              LIKE CONCAT('%', LOWER(FUNCTION('TRANSLATE', :keyword,
+               'áàảãạăắằẳẵặâấầẩẫậđéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵ',
+               'aaaaaaaaaaaaaaaaadeeeeeeeeeeeiiiiiooooooooooooooooouuuuuuuuuuuyyyyy')), '%')
                OR LOWER(e.email)    LIKE LOWER(CONCAT('%',:keyword,'%'))
                OR LOWER(c.title)    LIKE LOWER(CONCAT('%',:keyword,'%')))
         """,
@@ -114,6 +133,12 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
           AND (:status   IS NULL OR e.status = :status)
           AND (:keyword  IS NULL
                OR LOWER(e.fullName) LIKE LOWER(CONCAT('%',:keyword,'%'))
+               OR LOWER(FUNCTION('TRANSLATE', e.fullName,
+                   'áàảãạăắằẳẵặâấầẩẫậđéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵ',
+                   'aaaaaaaaaaaaaaaaadeeeeeeeeeeeiiiiiooooooooooooooooouuuuuuuuuuuyyyyy'))
+                  LIKE CONCAT('%', LOWER(FUNCTION('TRANSLATE', :keyword,
+                   'áàảãạăắằẳẵặâấầẩẫậđéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵ',
+                   'aaaaaaaaaaaaaaaaadeeeeeeeeeeeiiiiiooooooooooooooooouuuuuuuuuuuyyyyy')), '%')
                OR LOWER(e.email)    LIKE LOWER(CONCAT('%',:keyword,'%'))
                OR LOWER(c.title)    LIKE LOWER(CONCAT('%',:keyword,'%')))
         """)
@@ -175,4 +200,19 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
             @Param("instructorId") Long instructorId,
             @Param("courseId") Long courseId,
             @Param("status") EnrollmentStatus status);
+
+    @Query("""
+      SELECT DISTINCT u FROM Enrollment e
+      JOIN e.user u
+      ORDER BY u.fullName ASC, u.id ASC
+      """)
+    List<User> findDistinctUsersForFilter();
+
+    @Query("""
+      SELECT DISTINCT u FROM Enrollment e
+      JOIN e.user u
+      WHERE e.course.instructor.id = :instructorId
+      ORDER BY u.fullName ASC, u.id ASC
+      """)
+    List<User> findDistinctUsersForFilterByInstructor(@Param("instructorId") Long instructorId);
 }

@@ -77,10 +77,11 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf
                         .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasAnyRole("ADMIN", "MANAGER", "MARKETING")
                         .requestMatchers("/instructor/**").hasRole("INSTRUCTOR")
                         .requestMatchers("/profile/**").authenticated()
-                        .requestMatchers("/", "/login", "/perform-login", "/register",
+                        .requestMatchers("/", "/api/**", "/blogs/**",
+                                "/login", "/perform-login", "/register",
                                 "/forgot-password", "/reset-password/**", "/verify-otp/**", "/resend-otp",
                                 "/css/**", "/js/**", "/images/**", "/output.css")
                         .permitAll()

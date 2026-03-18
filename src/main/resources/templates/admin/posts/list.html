@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <title>Quản lý Bài đăng | OLMS</title>
+  <th:block th:replace="~{fragments/layout :: commonHead}"></th:block>
+  <style>
+    .badge-pub{background:rgba(16,185,129,.15);color:#059669;padding:.25rem .6rem;border-radius:20px;font-weight:600;font-size:.75rem;}
+    .badge-draft{background:rgba(99,102,241,.15);color:#4f46e5;padding:.25rem .6rem;border-radius:20px;font-weight:600;font-size:.75rem;}
+    .badge-hidden{background:rgba(245,158,11,.15);color:#d97706;padding:.25rem .6rem;border-radius:20px;font-weight:600;font-size:.75rem;}
+  </style>
+</head>
+<body class="bg-light">
+
+<div th:replace="~{fragments/sidebar :: sidebar}"></div>
+
+<div class="topbar">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb mb-0 small">
+      <li class="breadcrumb-item">
+        <a th:href="@{/admin/dashboard}" class="text-decoration-none text-muted">Admin</a>
+      </li>
+      <li class="breadcrumb-item active fw-600">Bài đăng</li>
+    </ol>
+  </nav>
+</div>
+
+<main class="main">
+
+  <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show mb-4">
+    <i class="fas fa-check-circle me-2"></i>
+    <span th:text="${successMessage}"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+
+  <div class="d-flex align-items-start justify-content-between mb-4">
+    <div>
+      <h4 class="page-title mb-1">
+        <i class="fas fa-newspaper me-2" style="color:var(--purple);"></i>Quản lý Bài đăng
+      </h4>
+      <p class="text-muted small mb-0">Xem, thêm, chỉnh sửa bài đăng. Admin/Manager có thể publish/hide.</p>
+    </div>
+    <a th:href="@{/admin/posts/new}" class="btn btn-purple px-4">
+      <i class="fas fa-plus me-2"></i>Thêm bài đăng
+    </a>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body py-3">
+      <form method="get" th:action="@{/admin/posts}" class="row g-3 align-items-end">
+
+        <div class="col-md-4">
+          <label class="form-label mb-1">Tìm kiếm</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-search text-muted"></i></span>
+            <input type="text" name="keyword" class="form-control" placeholder="Tiêu đề..." th:value="${keyword}"/>
+          </div>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label mb-1">Danh mục</label>
+          <select name="categoryId" class="form-select">
+            <option value="">— Tất cả danh mục —</option>
+            <option th:each="cat : ${categories}"
+                    th:value="${cat.id}"
+                    th:text="${cat.name}"
+                    th:selected="${cat.id == categoryId}"></option>
+          </select>
+        </div>
+
+        <div class="col-md-2">
+          <label class="form-label mb-1">Trạng thái</label>
+          <select name="status" class="form-select">
+            <option value="">— Tất cả —</option>
+            <option th:each="s : ${postStatuses}"
+                    th:value="${s.name()}"
+                    th:text="${s.name()}"
+                    th:selected="${s.name() == selectedStatus}"></option>
+          </select>
+        </div>
+
+        <input type="hidden" name="sortBy" th:value="${sortBy}"/>
+        <input type="hidden" name="sortDir" th:value="${sortDir}"/>
+
+        <div class="col-md-3 d-flex gap-2">
+          <button type="submit" class="btn btn-purple flex-grow-1">
+            <i class="fas fa-filter me-1"></i>Lọc
+          </button>
+          <a th:href="@{/admin/posts}" class="btn btn-outline-secondary" title="Reset">
+            <i class="fas fa-rotate-left"></i>
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card table-card">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+        <tr>
+          <th>#</th>
+          <th>Bài đăng</th>
+          <th>Danh mục</th>
+          <th>Tác giả</th>
+          <th>Trạng thái</th>
+          <th>Ngày tạo</th>
+          <th class="text-center">Thao tác</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:if="${posts.isEmpty()}">
+          <td colspan="7" class="text-center py-5 text-muted">
+            <i class="fas fa-inbox fa-2x d-block mb-2" style="color:#d1d5db;"></i>
+            Chưa có bài đăng nào. <a th:href="@{/admin/posts/new}">Tạo ngay?</a>
+          </td>
+        </tr>
+
+        <tr th:each="p : ${posts.content}">
+          <td class="text-muted fw-600" th:text="${p.id}"></td>
+          <td>
+            <div class="d-flex align-items-center gap-3">
+              <img th:if="${p.thumbnail != null and !#strings.isEmpty(p.thumbnail)}"
+                   th:src="${p.thumbnail}" alt="thumbnail"
+                   style="width:58px;height:38px;object-fit:cover;border-radius:5px;flex-shrink:0;"/>
+              <div class="rounded bg-secondary d-flex align-items-center justify-content-center text-white"
+                   th:unless="${p.thumbnail != null and !#strings.isEmpty(p.thumbnail)}"
+                   style="width:58px;height:38px;font-size:.6rem;flex-shrink:0;">IMG</div>
+              <div>
+                <div class="fw-600" style="max-width:260px;line-height:1.3;" th:text="${p.title}"></div>
+                <div class="text-muted small" th:text="${p.briefInfo}"></div>
+              </div>
+            </div>
+          </td>
+          <td class="small" th:text="${p.categoryName}"></td>
+          <td class="small" th:text="${p.authorName}"></td>
+          <td>
+            <span th:if="${p.status.name() == 'PUBLISHED'}" class="badge-pub">PUBLISHED</span>
+            <span th:if="${p.status.name() == 'DRAFT'}" class="badge-draft">DRAFT</span>
+            <span th:if="${p.status.name() == 'HIDDEN'}" class="badge-hidden">HIDDEN</span>
+          </td>
+          <td class="small text-muted" th:text="${#temporals.format(p.createdAt, 'dd/MM/yyyy')}"></td>
+          <td>
+            <div class="d-flex justify-content-center gap-1">
+              <a th:href="@{/admin/posts/{id}/edit(id=${p.id})}"
+                 class="btn btn-sm btn-outline-secondary" title="Chỉnh sửa">
+                <i class="fas fa-pen"></i>
+              </a>
+
+              <form sec:authorize="hasAnyRole('ADMIN','MANAGER')"
+                    th:action="@{/admin/posts/{id}/status(id=${p.id})}" method="post" class="d-inline">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <input type="hidden" name="value" th:value="${p.status.name() == 'PUBLISHED' ? 'HIDDEN' : 'PUBLISHED'}"/>
+                <button type="submit" class="btn btn-sm"
+                        th:classappend="${p.status.name() == 'PUBLISHED'} ? 'btn-outline-warning' : 'btn-outline-success'"
+                        th:title="${p.status.name() == 'PUBLISHED'} ? 'Hide' : 'Publish'">
+                  <i class="fas" th:classappend="${p.status.name() == 'PUBLISHED'} ? 'fa-eye-slash' : 'fa-eye'"></i>
+                </button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card-footer bg-white border-top d-flex align-items-center justify-content-between py-3"
+         th:if="${posts.totalPages > 1}">
+      <small class="text-muted">
+        Hiển thị <strong th:text="${posts.numberOfElements}"></strong>
+        / <strong th:text="${posts.totalElements}"></strong> bài đăng
+      </small>
+      <nav>
+        <ul class="pagination pagination-sm mb-0 gap-1">
+          <li class="page-item" th:classappend="${posts.first} ? 'disabled' : ''">
+            <a class="page-link rounded"
+               th:href="@{/admin/posts(page=${posts.number - 1}, keyword=${keyword}, categoryId=${categoryId}, status=${selectedStatus})}">
+              <i class="fas fa-chevron-left"></i>
+            </a>
+          </li>
+          <li class="page-item"
+              th:each="i : ${#numbers.sequence(0, posts.totalPages - 1)}"
+              th:classappend="${i == posts.number} ? 'active' : ''">
+            <a class="page-link rounded" th:text="${i + 1}"
+               th:href="@{/admin/posts(page=${i}, keyword=${keyword}, categoryId=${categoryId}, status=${selectedStatus})}"></a>
+          </li>
+          <li class="page-item" th:classappend="${posts.last} ? 'disabled' : ''">
+            <a class="page-link rounded"
+               th:href="@{/admin/posts(page=${posts.number + 1}, keyword=${keyword}, categoryId=${categoryId}, status=${selectedStatus})}">
+              <i class="fas fa-chevron-right"></i>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+  </div>
+
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

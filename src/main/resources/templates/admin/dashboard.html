@@ -6,19 +6,74 @@
 </head>
 
 <body>
-    <section>
-        <div class="container mt-4">
-            <div class="alert alert-info">
-                <h2 class="alert-heading">Admin Dashboard</h2>
-                <p>Welcome, Administrator! This is a minimal dashboard for system management.</p>
-            </div>
-            <div class="row">
-                <div class="col-md-12">
-                    <p>Administrative functions can be added here.</p>
+<section>
+    <div class="container mt-4">
+
+        <!-- Header -->
+        <div class="alert alert-info text-center">
+            <h2 class="alert-heading">Admin Dashboard</h2>
+            <p>Welcome, Administrator! Manage your system efficiently.</p>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row g-4">
+
+            <!-- Posts -->
+            <div class="col-md-4">
+                <div class="card shadow-sm text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">📄 Bài viết</h5>
+                        <p class="card-text">Quản lý blog, nội dung bài viết.</p>
+                        <a th:href="@{/admin/posts}" class="btn btn-primary">
+                            Đi đến Posts
+                        </a>
+                    </div>
                 </div>
             </div>
+
+            <!-- Users -->
+            <div class="col-md-4">
+                <div class="card shadow-sm text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">👤 Người dùng</h5>
+                        <p class="card-text">Quản lý tài khoản hệ thống.</p>
+                        <a th:href="@{/admin/users}" class="btn btn-success">
+                            Đi đến Users
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Courses -->
+            <div class="col-md-4">
+                <div class="card shadow-sm text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">🎓 Khóa học</h5>
+                        <p class="card-text">Quản lý khóa học và nội dung học tập.</p>
+                        <a th:href="@{/admin/courses}" class="btn btn-warning">
+                            Đi đến Courses
+                        </a>
+                    </div>
+                </div>
+            </div>
+
         </div>
-    </section>
+
+        <!-- Extra section -->
+        <div class="mt-5">
+            <h4>⚙️ Chức năng khác</h4>
+            <div class="d-flex gap-3 flex-wrap mt-3">
+                <a th:href="@{/admin/blog-category}" class="btn btn-outline-primary">
+                    📂 Danh mục blog
+                </a>
+                <a th:href="@{/admin/settings}" class="btn btn-outline-secondary">
+                    ⚙️ Cài đặt hệ thống
+                </a>
+            </div>
+        </div>
+
+    </div>
+</section>
 </body>
 
 </html>

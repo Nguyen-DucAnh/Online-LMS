@@ -1,6 +1,7 @@
 package com.online.lms.repository;
 
 import com.online.lms.entity.Course;
+import com.online.lms.enums.CourseLevel;
 import com.online.lms.enums.CourseStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -26,4 +27,22 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
             @Param("status") CourseStatus status,
             Pageable pageable
     );
+
+    @Query("""
+            SELECT c FROM Course c
+            LEFT JOIN FETCH c.category cat
+            LEFT JOIN FETCH c.instructor ins
+            WHERE c.status = 'PUBLISHED'
+              AND (:keyword IS NULL OR LOWER(c.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+              AND (:categoryId IS NULL OR cat.id = :categoryId)
+              AND (:level IS NULL OR c.level = :level)
+            """)
+    Page<Course> searchPublished(
+            @Param("keyword") String keyword,
+            @Param("categoryId") Long categoryId,
+            @Param("level") CourseLevel level,
+            Pageable pageable
+    );
+
+    long countByStatus(CourseStatus status);
 }

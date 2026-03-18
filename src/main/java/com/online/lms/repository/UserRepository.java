@@ -23,6 +23,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     List<User> findByRoleIn(List<UserRole> roles);
 
     long countByRole(UserRole role);
+    List<User> findTop5ByOrderByIdDesc();
 
     // Hàm tìm kiếm, lọc và phân trang người dùng
     @Query("SELECT u FROM User u WHERE " +

@@ -18,6 +18,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -35,6 +36,42 @@ public class CourseContentServiceImpl implements CourseContentService {
     public List<ChapterDTO> findChaptersByCourse(Long courseId) {
         return chapterRepository.findByCourseIdWithLessons(courseId)
                 .stream().map(CourseMapper::toChapterDTO).toList();
+    }
+
+    @Override
+    public List<ChapterDTO> findActiveChaptersByCourse(Long courseId) {
+        return chapterRepository.findActiveByCourseIdWithActiveLessons(courseId)
+                .stream()
+                .map(CourseMapper::toChapterDTO)
+                .map(chapter -> {
+                    List<LessonDTO> activeLessons = chapter.getLessons() == null
+                            ? List.of()
+                            : chapter.getLessons().stream()
+                            .filter(lesson -> Boolean.TRUE.equals(lesson.getStatus()))
+                            .toList();
+                    chapter.setLessons(new ArrayList<>(activeLessons));
+                    return chapter;
+                })
+                .filter(chapter -> !chapter.getLessons().isEmpty())
+                .toList();
+    }
+
+    @Override
+    public LessonDTO findActiveLessonByCourseAndId(Long courseId, Long lessonId) {
+        Lesson lesson = lessonRepository.findByIdAndChapter_Course_IdAndStatusTrue(lessonId, courseId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Không tìm thấy bài học đang hoạt động id=" + lessonId + " cho khóa học id=" + courseId));
+        return CourseMapper.toLessonDTO(lesson);
+    }
+
+    @Override
+    public LessonDTO findFirstActiveLessonByCourse(Long courseId) {
+        Lesson firstLesson = lessonRepository.findActiveLessonsByCourseOrder(courseId)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Khóa học chưa có bài học đang hoạt động để học"));
+        return CourseMapper.toLessonDTO(firstLesson);
     }
 
     @Override

@@ -2,9 +2,7 @@ package com.online.lms.controller;
 
 import com.online.lms.dto.request.auth.OtpRequestDTO;
 import com.online.lms.dto.request.auth.RegisterRequestDTO;
-import com.online.lms.entity.User;
 import com.online.lms.service.AuthService;
-import com.online.lms.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;

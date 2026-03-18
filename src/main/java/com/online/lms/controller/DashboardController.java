@@ -2,13 +2,16 @@ package com.online.lms.controller;
 
 
 import com.online.lms.dto.course.CourseListItemDTO;
+import com.online.lms.entity.Course;
 import com.online.lms.enums.CourseStatus;
 import com.online.lms.enums.UserRole;
+import com.online.lms.exceptions.ResourceNotFoundException;
 import com.online.lms.repository.CourseRepository;
 import com.online.lms.repository.UserRepository;
 import com.online.lms.service.CategoryService;
 import com.online.lms.service.CourseContentService;
 import com.online.lms.service.CourseService;
+import com.online.lms.service.EnrollmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -26,6 +29,7 @@ public class DashboardController {
     private final CourseService courseService;
     private final CategoryService categoryService;
     private final CourseContentService courseContentService;
+    private final EnrollmentService enrollmentService;
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
 
@@ -71,9 +75,14 @@ public class DashboardController {
             @PathVariable Long lessonId,
             Model model
     ) {
-        model.addAttribute("course", courseService.findById(id));
-        model.addAttribute("chapters", courseContentService.findChaptersByCourse(id));
-        model.addAttribute("currentLesson", courseContentService.findLessonById(lessonId));
+        Course course = courseService.findById(id);
+        if (!enrollmentService.hasAccessToCourse(id)) {
+            throw new ResourceNotFoundException("Bạn chưa có quyền truy cập khóa học này");
+        }
+
+        model.addAttribute("course", course);
+        model.addAttribute("chapters", courseContentService.findActiveChaptersByCourse(id));
+        model.addAttribute("currentLesson", courseContentService.findActiveLessonByCourseAndId(id, lessonId));
         return "lesson-view";
     }
 

@@ -17,11 +17,15 @@ public class CourseListItemDTO {
 
     private Long id;
     private String title;
+    private String description;
     private String thumbnail;
     private String categoryName;
+    private Long categoryId;
     private String instructorName;
     private String instructorEmail;
     private BigDecimal listedPrice;
+    private BigDecimal salePrice;
+    private Integer duration;
     private CourseStatus status;
     private CourseLevel level;
     private Boolean featured;

@@ -1,4 +1,4 @@
-package com.online.lms.controller;
+package com.online.lms.controller.enrollments;
 
 import com.online.lms.service.EnrollmentService;
 import lombok.RequiredArgsConstructor;

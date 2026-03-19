@@ -2,12 +2,14 @@ package com.online.lms.service;
 
 import com.online.lms.dto.enrollment.EnrollmentFormDTO;
 import com.online.lms.dto.enrollment.EnrollmentListItemDTO;
+import com.online.lms.entity.User;
 import com.online.lms.enums.EnrollmentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 public interface AdminEnrollmentService {
 
@@ -60,4 +62,10 @@ public interface AdminEnrollmentService {
 
     /** Import danh sách enrollment từ Excel */
     int importFromExcel(Long courseId, MultipartFile file) throws IOException;
+
+    /** Danh sách user cho dropdown filter ở Enrollment List */
+    List<User> findFilterUsers();
+
+    /** Danh sách user cho dropdown filter của manager */
+    List<User> findFilterUsersByInstructor(Long instructorId);
 }

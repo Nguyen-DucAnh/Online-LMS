@@ -63,6 +63,11 @@
                     <div class="col-md-2">
                         <select name="userId" class="form-select form-select-sm">
                             <option value="">All Users</option>
+                            <option th:each="u : ${users}"
+                                    th:value="${u.id}"
+                                    th:text="${u.fullName + ' (' + u.email + ')'}"
+                                    th:selected="${u.id == selectedUserId}">
+                            </option>
                         </select>
                     </div>
 

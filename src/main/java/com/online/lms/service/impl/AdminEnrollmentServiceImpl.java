@@ -263,6 +263,16 @@ public class AdminEnrollmentServiceImpl implements AdminEnrollmentService {
         return count;
     }
 
+    @Override
+    public List<User> findFilterUsers() {
+        return enrollmentRepository.findDistinctUsersForFilter();
+    }
+
+    @Override
+    public List<User> findFilterUsersByInstructor(Long instructorId) {
+        return enrollmentRepository.findDistinctUsersForFilterByInstructor(instructorId);
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private Enrollment getOrThrow(Long id) {

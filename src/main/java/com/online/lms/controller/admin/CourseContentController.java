@@ -1,7 +1,9 @@
 package com.online.lms.controller.admin;
 
 import com.online.lms.dto.chapter.ChapterDTO;
+import com.online.lms.entity.Course;
 import com.online.lms.enums.LessonType;
+import com.online.lms.exceptions.ResourceNotFoundException;
 import com.online.lms.service.CourseContentService;
 import com.online.lms.service.CourseService;
 import lombok.RequiredArgsConstructor;
@@ -28,12 +30,18 @@ public class CourseContentController {
 
     @GetMapping("/content")
     public String content(@PathVariable Long courseId, Model model) {
+        Course course;
+        try {
+            course = courseService.findById(courseId);
+        } catch (ResourceNotFoundException e) {
+            return "redirect:/admin/courses";
+        }
         List<ChapterDTO> chapters = contentService.findChaptersByCourse(courseId);
         long totalLessons = chapters.stream()
                 .mapToLong(ch -> ch.getLessons().size())
                 .sum();
 
-        model.addAttribute("course", courseService.findById(courseId));
+        model.addAttribute("course", course);
         model.addAttribute("courseId", courseId);
         model.addAttribute("chapters", chapters);
         model.addAttribute("totalLessons", totalLessons);

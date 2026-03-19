@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
-@RequestMapping("/profile")
+@RequestMapping("/user/profile")
 @RequiredArgsConstructor
 public class UserProfileController {
 
@@ -44,7 +44,7 @@ public class UserProfileController {
         if (result.hasErrors()) {
             redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.updateProfileRequest", result);
             redirectAttributes.addFlashAttribute("updateProfileRequest", request);
-            return "redirect:/profile";
+            return "redirect:/user/profile";
         }
         try {
             userService.updateProfile(request);
@@ -52,7 +52,7 @@ public class UserProfileController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
-        return "redirect:/profile";
+        return "redirect:/user/profile";
     }
 
     @PostMapping("/change-password")
@@ -61,7 +61,7 @@ public class UserProfileController {
         if (result.hasErrors()) {
             redirectAttributes.addFlashAttribute("org.springframework.validation.BindingResult.changePasswordRequest", result);
             redirectAttributes.addFlashAttribute("changePasswordRequest", request);
-            return "redirect:/profile";
+            return "redirect:/user/profile";
         }
         try {
             userService.changePassword(request);
@@ -69,6 +69,6 @@ public class UserProfileController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error changing password: " + e.getMessage());
         }
-        return "redirect:/profile";
+        return "redirect:/user/profile";
     }
 }

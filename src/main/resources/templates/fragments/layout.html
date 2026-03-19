@@ -270,6 +270,7 @@
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
                     <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="/courses">Courses</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/blogs">Blog</a></li>
                     <li class="nav-item"><a class="nav-link" href="#">About</a></li>
                 </ul>
 
@@ -287,7 +288,7 @@
                                 <span sec:authentication="name" class="d-none d-sm-inline">User</span>
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end border-0 shadow-lg mt-3">
-                                <li><a class="dropdown-item py-2" href="/profile"><i
+                                <li><a class="dropdown-item py-2" href="/user/profile"><i
                                             class="fas fa-user me-2 opacity-50"></i> Profile</a></li>
                                 <li sec:authorize="hasRole('ADMIN')"><a class="dropdown-item py-2"
                                         href="/admin/dashboard"><i class="fas fa-tachometer-alt me-2 opacity-50"></i>

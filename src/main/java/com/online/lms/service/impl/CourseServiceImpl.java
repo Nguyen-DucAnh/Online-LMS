@@ -5,6 +5,7 @@ import com.online.lms.dto.course.CourseListItemDTO;
 import com.online.lms.entity.Category;
 import com.online.lms.entity.Course;
 import com.online.lms.entity.User;
+import com.online.lms.enums.CourseLevel;
 import com.online.lms.enums.CourseStatus;
 import com.online.lms.enums.UserRole;
 import com.online.lms.exceptions.ResourceNotFoundException;
@@ -41,6 +42,19 @@ public class CourseServiceImpl implements CourseService {
         String kw = (keyword != null && !keyword.isBlank()) ? keyword.trim() : null;
         return courseRepository.search(kw, categoryId, status, instructorId, pageable)
                 .map(CourseMapper::toListItemDTO);
+    }
+
+    @Override
+    public Page<CourseListItemDTO> searchPublished(String keyword, Long categoryId,
+                                                    CourseLevel level, Pageable pageable) {
+        String kw = (keyword != null && !keyword.isBlank()) ? keyword.trim() : null;
+        return courseRepository.searchPublished(kw, categoryId, level, pageable)
+                .map(CourseMapper::toListItemDTO);
+    }
+
+    @Override
+    public long countPublished() {
+        return courseRepository.countByStatus(CourseStatus.PUBLISHED);
     }
 
     @Override

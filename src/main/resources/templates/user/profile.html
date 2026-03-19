@@ -64,7 +64,7 @@
                 <!-- Update Info -->
                 <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-4">
                     <h4 class="fw-bold mb-4">Personal Information</h4>
-                    <form th:action="@{/profile/update}" th:object="${updateProfileRequest}" method="post">
+                    <form th:action="@{/user/profile/update}" th:object="${updateProfileRequest}" method="post">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold small text-uppercase tracking-wider">Full
@@ -100,7 +100,7 @@
                 <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5">
                     <h4 class="fw-bold mb-4">Security Settings</h4>
                     <p class="text-muted small mb-4">Manage your account security and authentication.</p>
-                    <form th:action="@{/profile/change-password}" th:object="${changePasswordRequest}" method="post">
+                    <form th:action="@{/user/profile/change-password}" th:object="${changePasswordRequest}" method="post">
                         <div class="row g-3">
                             <div class="col-md-12">
                                 <label class="form-label fw-semibold small text-uppercase tracking-wider">Current

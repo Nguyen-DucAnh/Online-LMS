@@ -30,7 +30,7 @@
                         </div>
                         <div sec:authorize="isAuthenticated()"
                             class="d-flex justify-content-center justify-content-lg-start">
-                            <a href="/profile" class="btn btn-primary btn-lg px-5 shadow-lg">Back to My Dashboard</a>
+                            <a href="/user/profile" class="btn btn-primary btn-lg px-5 shadow-lg">Back to My Dashboard</a>
                         </div>
                     </div>
                     <div class="col-lg-6">
@@ -162,7 +162,7 @@
                             <a href="/register" class="btn btn-primary btn-lg px-5 py-3 shadow">Create Free Account</a>
                         </div>
                         <div sec:authorize="isAuthenticated()">
-                            <a href="/profile" class="btn btn-primary btn-lg px-5 py-3 shadow">Visit Your Dashboard</a>
+                            <a href="/user/profile" class="btn btn-primary btn-lg px-5 py-3 shadow">Visit Your Dashboard</a>
                         </div>
                     </div>
                 </div>

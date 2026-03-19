@@ -9,6 +9,7 @@ import com.online.lms.enums.UserRole;
 import com.online.lms.repository.UserRepository;
 import com.online.lms.service.CategoryService;
 import com.online.lms.service.CourseService;
+import com.online.lms.service.FileStorageService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +39,7 @@ public class CourseController {
     private final CourseService courseService;
     private final CategoryService categoryService;
     private final UserRepository userRepository;
+    private final FileStorageService fileStorageService;
 
     @GetMapping
     public String list(Model model,
@@ -51,8 +53,14 @@ public class CourseController {
         User currentUser = getCurrentUser(principal);
         Long instructorId = (currentUser.getRole() == UserRole.MANAGER) ? currentUser.getId() : null;
 
-        CourseStatus courseStatus = (status != null && !status.isBlank())
-                ? CourseStatus.valueOf(status) : null;
+        CourseStatus courseStatus = null;
+        if (status != null && !status.isBlank()) {
+            try {
+                courseStatus = CourseStatus.valueOf(status);
+            } catch (IllegalArgumentException e) {
+                // Ignore invalid status values, show all
+            }
+        }
 
         model.addAttribute("courses", courseService.search(keyword, categoryId, courseStatus, instructorId,
                 PageRequest.of(page, size)));
@@ -102,6 +110,12 @@ public class CourseController {
             populateFormModel(model);
             return CourseViewNames.COURSE_FORM;
         }
+
+        if (dto.getThumbnailFile() != null && !dto.getThumbnailFile().isEmpty()) {
+            String url = fileStorageService.store(dto.getThumbnailFile(), "images");
+            dto.setThumbnail(url);
+        }
+
         courseService.save(dto);
         redirectAttributes.addFlashAttribute("successMessage", "Tạo khóa học thành công!");
         return "redirect:/admin/courses";
@@ -123,6 +137,11 @@ public class CourseController {
         if (result.hasErrors()) {
             populateFormModel(model);
             return CourseViewNames.COURSE_FORM;
+        }
+
+        if (dto.getThumbnailFile() != null && !dto.getThumbnailFile().isEmpty()) {
+            String url = fileStorageService.store(dto.getThumbnailFile(), "images");
+            dto.setThumbnail(url);
         }
 
         // Field restrictions for Managers are handled in CourseServiceImpl.update

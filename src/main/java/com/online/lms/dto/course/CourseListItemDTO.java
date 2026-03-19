@@ -22,6 +22,7 @@ public class CourseListItemDTO {
     private String categoryName;
     private Long categoryId;
     private String instructorName;
+    private String instructorEmail;
     private BigDecimal listedPrice;
     private BigDecimal salePrice;
     private Integer duration;

@@ -2,9 +2,7 @@ package com.online.lms.controller;
 
 import com.online.lms.dto.request.auth.OtpRequestDTO;
 import com.online.lms.dto.request.auth.RegisterRequestDTO;
-import com.online.lms.entity.User;
 import com.online.lms.service.AuthService;
-import com.online.lms.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -50,6 +48,14 @@ public class AuthController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/register";
         }
+    }
+
+    @GetMapping("/verify-otp")
+    public String verifyOtpPage(@RequestParam("email") String email, Model model) {
+        OtpRequestDTO otpRequest = new OtpRequestDTO();
+        otpRequest.setEmail(email);
+        model.addAttribute("otpRequest", otpRequest);
+        return "auth/verify-otp";
     }
 
     @PostMapping("/verify-otp")

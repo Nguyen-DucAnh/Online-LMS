@@ -3,6 +3,7 @@ package com.online.lms.service.impl;
 import com.online.lms.dto.chapter.ChapterDTO;
 import com.online.lms.dto.chapter.LessonDTO;
 import com.online.lms.entity.Chapter;
+import com.online.lms.enums.LessonType;
 import com.online.lms.entity.Course;
 import com.online.lms.entity.Lesson;
 import com.online.lms.exceptions.ResourceNotFoundException;
@@ -17,6 +18,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -37,20 +39,60 @@ public class CourseContentServiceImpl implements CourseContentService {
     }
 
     @Override
+    public List<ChapterDTO> findActiveChaptersByCourse(Long courseId) {
+        return chapterRepository.findActiveByCourseIdWithActiveLessons(courseId)
+                .stream()
+                .map(CourseMapper::toChapterDTO)
+                .map(chapter -> {
+                    List<LessonDTO> activeLessons = chapter.getLessons() == null
+                            ? List.of()
+                            : chapter.getLessons().stream()
+                            .filter(lesson -> Boolean.TRUE.equals(lesson.getStatus()))
+                            .toList();
+                    chapter.setLessons(new ArrayList<>(activeLessons));
+                    return chapter;
+                })
+                .filter(chapter -> !chapter.getLessons().isEmpty())
+                .toList();
+    }
+
+    @Override
+    public LessonDTO findActiveLessonByCourseAndId(Long courseId, Long lessonId) {
+        Lesson lesson = lessonRepository.findByIdAndChapter_Course_IdAndStatusTrue(lessonId, courseId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Không tìm thấy bài học đang hoạt động id=" + lessonId + " cho khóa học id=" + courseId));
+        return CourseMapper.toLessonDTO(lesson);
+    }
+
+    @Override
+    public LessonDTO findFirstActiveLessonByCourse(Long courseId) {
+        Lesson firstLesson = lessonRepository.findActiveLessonsByCourseOrder(courseId)
+                .stream()
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Khóa học chưa có bài học đang hoạt động để học"));
+        return CourseMapper.toLessonDTO(firstLesson);
+    }
+
+    @Override
     @Transactional
     public void saveChapter(ChapterDTO dto) {
         if (dto.getId() != null) {
             Chapter chapter = getChapterOrThrow(dto.getId());
             chapter.setTitle(dto.getTitle());
             chapter.setDescription(dto.getDescription());
+            if (dto.getOrderIndex() != null) {
+                chapter.setOrderIndex(dto.getOrderIndex());
+            }
             chapterRepository.save(chapter);
             log.info("Chapter updated: id={}", dto.getId());
         } else {
             Course course = getCourseOrThrow(dto.getCourseId());
+            Long order = dto.getOrderIndex() != null ? dto.getOrderIndex() : chapterRepository.countByCourseId(dto.getCourseId());
             Chapter chapter = Chapter.builder()
                     .title(dto.getTitle())
                     .description(dto.getDescription())
-                    .orderIndex(chapterRepository.countByCourseId(dto.getCourseId()))
+                    .orderIndex(order)
                     .course(course)
                     .build();
             chapterRepository.save(chapter);
@@ -73,7 +115,17 @@ public class CourseContentServiceImpl implements CourseContentService {
             lesson.setTitle(dto.getTitle());
             lesson.setContent(dto.getContent());
             lesson.setType(dto.getType());
-            lesson.setDuration(dto.getDuration());
+            lesson.setDuration(dto.getDuration() != null ? dto.getDuration() : 0);
+            lesson.setOrderIndex(dto.getOrderIndex() != null ? dto.getOrderIndex() : 0);
+            lesson.setStatus(dto.getStatus() != null ? dto.getStatus() : true);
+            if (dto.getType() == LessonType.TEXT) {
+                lesson.setContentFilePath(null);
+            } else if (dto.getContentFilePath() != null) {
+                lesson.setContentFilePath(dto.getContentFilePath());
+            }
+            if (dto.getPreviewEnabled() != null) {
+                lesson.setPreviewEnabled(dto.getPreviewEnabled());
+            }
             lessonRepository.save(lesson);
             log.info("Lesson updated: id={}", dto.getId());
         } else {
@@ -82,9 +134,11 @@ public class CourseContentServiceImpl implements CourseContentService {
                     .title(dto.getTitle())
                     .content(dto.getContent())
                     .type(dto.getType())
-                    .duration(dto.getDuration())
-                    .orderIndex(lessonRepository.countByChapterId(dto.getChapterId()))
-                    .status(true)
+                    .duration(dto.getDuration() != null ? dto.getDuration() : 0)
+                    .orderIndex(dto.getOrderIndex() != null ? dto.getOrderIndex() : lessonRepository.countByChapterId(dto.getChapterId()))
+                    .status(dto.getStatus() != null ? dto.getStatus() : true)
+                    .contentFilePath(dto.getContentFilePath())
+                    .previewEnabled(dto.getPreviewEnabled() != null && dto.getPreviewEnabled())
                     .chapter(chapter)
                     .build();
             lessonRepository.save(lesson);
@@ -106,6 +160,31 @@ public class CourseContentServiceImpl implements CourseContentService {
     public void deleteLesson(Long lessonId) {
         lessonRepository.delete(getLessonOrThrow(lessonId));
         log.info("Lesson deleted: id={}", lessonId);
+    }
+
+    @Override
+    public LessonDTO findLessonById(Long lessonId) {
+        return CourseMapper.toLessonDTO(getLessonOrThrow(lessonId));
+    }
+
+    @Override
+    public ChapterDTO findChapterById(Long chapterId) {
+        return CourseMapper.toChapterDTO(getChapterOrThrow(chapterId));
+    }
+
+    @Override
+    public Chapter findChapterEntity(Long chapterId, Long courseId) {
+        return chapterRepository.findByIdAndCourse_Id(chapterId, courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy chương id=" + chapterId));
+    }
+
+    @Override
+    public Lesson findLessonEntity(Long lessonId, Long chapterId) {
+        Lesson lesson = getLessonOrThrow(lessonId);
+        if (!lesson.getChapter().getId().equals(chapterId)) {
+            throw new ResourceNotFoundException("Bài học không thuộc chương này");
+        }
+        return lesson;
     }
 
     // ===== Private helpers =====

@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout(~{::title}, ~{::section})}">
+
+<head>
+    <title th:text="${course.title + ' | Online LMS'}">Course Detail</title>
+</head>
+
+<body>
+    <section>
+        <!-- Hero Section -->
+        <div class="bg-dark text-white py-5 mb-5 rounded-4 shadow-lg overflow-hidden position-relative">
+            <div class="container position-relative z-1">
+                <div class="row align-items-center">
+                    <div class="col-lg-8">
+                        <nav aria-label="breadcrumb" class="mb-3">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item"><a href="/courses"
+                                        class="text-white-50 text-decoration-none">Courses</a></li>
+                                <li class="breadcrumb-item active text-white" aria-current="page"
+                                    th:text="${course.category.name}">Category</li>
+                            </ol>
+                        </nav>
+                        <h1 class="display-4 fw-bold mb-3" th:text="${course.title}">Course Title</h1>
+                        <p class="lead text-white-50 mb-4" th:text="${course.description}">Short description of the
+                            course content and objectives.</p>
+
+                        <div class="d-flex flex-wrap gap-4 align-items-center mb-4">
+                            <div class="d-flex align-items-center text-white-50">
+                                <i class="fas fa-user-tie me-2 text-primary"></i>
+                                <span th:text="${course.instructor.fullName}">Instructor Name</span>
+                            </div>
+                            <div class="d-flex align-items-center text-white-50">
+                                <i class="fas fa-signal me-2 text-primary"></i>
+                                <span th:text="${course.level.name()}">Level</span>
+                            </div>
+                            <div class="d-flex align-items-center text-white-50">
+                                <i class="fas fa-clock me-2 text-primary"></i>
+                                <span th:text="${course.duration + ' hours'}">Duration</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 d-none d-lg-block">
+                        <div class="card border-0 shadow-lg overflow-hidden rounded-4">
+                            <img th:src="${course.thumbnail != null ? course.thumbnail : 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800'}"
+                                class="card-img-top" th:alt="${course.title}" style="height: 250px; object-fit: cover;">
+                            <div class="card-body p-4 bg-white text-dark text-center">
+                                <h3 class="fw-bold mb-3"
+                                    th:text="${course.salePrice != null ? '$' + course.salePrice : 'Free'}">$49.99</h3>
+                                <button class="btn btn-primary btn-lg w-100 mb-3">Enroll Now</button>
+                                <p class="small text-muted mb-0">30-Day Money-Back Guarantee</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Decorative circle -->
+            <div class="position-absolute top-0 end-0 bg-primary opacity-10 rounded-circle translate-middle mt-n5 me-n5"
+                style="width: 400px; height: 400px; filter: blur(60px);"></div>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                <!-- Left Content -->
+                <div class="col-lg-8">
+                    <!-- Curriculum -->
+                    <div class="mb-5">
+                        <h3 class="fw-bold mb-4">Course <span class="text-primary">Curriculum</span></h3>
+                        <div class="accordion accordion-flush shadow-sm rounded-4 overflow-hidden border"
+                            id="curriculumAccordion">
+
+                            <!-- Chapter Loop -->
+                            <div th:each="chapter, chStat : ${chapters}" class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button fw-bold py-3" type="button"
+                                        th:data-bs-target="'#chapter-' + ${chapter.id}"
+                                        th:aria-controls="'chapter-' + ${chapter.id}"
+                                        th:classappend="${chStat.index == 0} ? '' : 'collapsed'"
+                                        data-bs-toggle="collapse"
+                                        th:aria-expanded="${chStat.index == 0} ? 'true' : 'false'">
+                                        <span class="me-3 text-primary"
+                                            th:text="${'Ch' + (chStat.index + 1)}">Ch1</span>
+                                        <span th:text="${chapter.title}">Chapter Title</span>
+                                    </button>
+                                </h2>
+                                <div th:id="'chapter-' + ${chapter.id}" class="accordion-collapse collapse"
+                                    th:classappend="${chStat.index == 0} ? 'show' : ''"
+                                    data-bs-parent="#curriculumAccordion">
+                                    <div class="accordion-body p-0">
+                                        <div class="list-group list-group-flush">
+                                            <!-- Lesson Loop -->
+                                            <a th:each="lesson : ${chapter.lessons}"
+                                                th:href="@{/courses/{cId}/lessons/{lId}(cId=${course.id}, lId=${lesson.id})}"
+                                                class="list-group-item list-group-item-action border-0 py-3 px-4 d-flex align-items-center">
+                                                <i class="fas fa-play-circle me-3 text-muted"></i>
+                                                <span th:text="${lesson.title}">Lesson Title</span>
+                                                <span class="ms-auto text-muted small"
+                                                    th:text="${lesson.duration + ' min'}">10 min</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Sidebar (Mobile only) -->
+                <div class="col-lg-4 d-lg-none mb-5">
+                    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+                        <div class="card-body p-4 text-center">
+                            <h3 class="fw-bold mb-3"
+                                th:text="${course.salePrice != null ? '$' + course.salePrice : 'Free'}">$49.99</h3>
+                            <button class="btn btn-primary btn-lg w-100 mb-3">Enroll Now</button>
+                            <p class="small text-muted mb-0">30-Day Money-Back Guarantee</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+
+</html>

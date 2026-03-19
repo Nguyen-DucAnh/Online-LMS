@@ -1,79 +1,188 @@
 <!DOCTYPE html>
-<html th:replace="~{fragments/layout :: layout(~{::title}, ~{::section})}">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
-    <title>Admin Dashboard</title>
+    <meta charset="UTF-8">
+    <title>Dashboard Quản trị | OLMS</title>
+    <th:block th:replace="~{fragments/layout :: commonHead}"></th:block>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --purple: #6f42c1; --purple-light: #f3f0ff; --sidebar-width: 250px;}
+        .bg-purple { background-color: var(--purple) !important; }
+        .text-purple { color: var(--purple) !important; }
+        .btn-purple { background-color: var(--purple); color: white; border: none; }
+        .btn-purple:hover { background-color: #59359a; color: white; }
+        .main-content { margin-left: var(--sidebar-width); transition: all 0.3s; }
+        .topbar { margin-left: var(--sidebar-width); padding: 15px 30px; background: white; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; }
+        @media (max-width: 768px) { .main-content, .topbar { margin-left: 0; } }
+    </style>
 </head>
 
-<body>
-<section>
-    <div class="container mt-4">
+<body class="bg-light">
 
-        <!-- Header -->
-        <div class="alert alert-info text-center">
-            <h2 class="alert-heading">Admin Dashboard</h2>
-            <p>Welcome, Administrator! Manage your system efficiently.</p>
-        </div>
+<div th:replace="~{fragments/sidebar :: sidebar}"></div>
 
-        <!-- Quick Actions -->
-        <div class="row g-4">
+<div class="topbar shadow-sm">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 small">
+            <li class="breadcrumb-item active fw-bold text-uppercase text-secondary">Admin Dashboard</li>
+        </ol>
+    </nav>
 
-            <!-- Posts -->
-            <div class="col-md-4">
-                <div class="card shadow-sm text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">📄 Bài viết</h5>
-                        <p class="card-text">Quản lý blog, nội dung bài viết.</p>
-                        <a th:href="@{/admin/posts}" class="btn btn-primary">
-                            Đi đến Posts
-                        </a>
-                    </div>
-                </div>
+    <div class="dropdown">
+        <button class="btn btn-sm d-flex align-items-center gap-2 border-0 shadow-none" data-bs-toggle="dropdown">
+            <div class="rounded-circle d-flex align-items-center justify-content-center text-white bg-purple"
+                 style="width:32px;height:32px;font-size:.75rem;">
+                <i class="fas fa-user"></i>
             </div>
-
-            <!-- Users -->
-            <div class="col-md-4">
-                <div class="card shadow-sm text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">👤 Người dùng</h5>
-                        <p class="card-text">Quản lý tài khoản hệ thống.</p>
-                        <a th:href="@{/admin/users}" class="btn btn-success">
-                            Đi đến Users
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Courses -->
-            <div class="col-md-4">
-                <div class="card shadow-sm text-center">
-                    <div class="card-body">
-                        <h5 class="card-title">🎓 Khóa học</h5>
-                        <p class="card-text">Quản lý khóa học và nội dung học tập.</p>
-                        <a th:href="@{/admin/courses}" class="btn btn-warning">
-                            Đi đến Courses
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- Extra section -->
-        <div class="mt-5">
-            <h4>⚙️ Chức năng khác</h4>
-            <div class="d-flex gap-3 flex-wrap mt-3">
-                <a th:href="@{/admin/blog-category}" class="btn btn-outline-primary">
-                    📂 Danh mục blog
-                </a>
-                <a th:href="@{/admin/settings}" class="btn btn-outline-secondary">
-                    ⚙️ Cài đặt hệ thống
-                </a>
-            </div>
-        </div>
-
+            <span class="fw-bold d-none d-md-inline" sec:authentication="name">Administrator</span>
+            <i class="fas fa-chevron-down text-muted" style="font-size:.65rem;"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
+            <li><a class="dropdown-item py-2" th:href="@{/user/profile}"><i class="fas fa-user me-2 text-muted"></i>Profile</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <form th:action="@{/logout}" method="post">
+                    <button type="submit" class="dropdown-item text-danger py-2">
+                        <i class="fas fa-sign-out-alt me-2"></i>Sign Out
+                    </button>
+                </form>
+            </li>
+        </ul>
     </div>
-</section>
-</body>
+</div>
 
+<main class="main-content p-4">
+    <div class="container-fluid p-0">
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 class="fw-bold mb-1">System Overview</h2>
+                            <p class="text-muted mb-0">Hello, here's a summary of the system activities and latest updates.</p>
+                        </div>
+                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                            <a th:href="@{/admin/courses/new}" class="btn btn-purple shadow-sm px-4 rounded-pill">
+                                <i class="fas fa-plus me-2"></i>New Course
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100 border-start border-primary border-4 position-relative overflow-hidden">
+                    <small class="text-primary fw-bold text-uppercase">Total Users</small>
+                    <h3 class="fw-bold mt-2 mb-0" th:text="${totalUsers != null ? totalUsers : 0}">0</h3>
+                    <i class="fas fa-users position-absolute end-0 bottom-0 m-3 text-primary opacity-25 fa-3x" style="transform: rotate(-10deg);"></i>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100 border-start border-success border-4 position-relative overflow-hidden">
+                    <small class="text-success fw-bold text-uppercase">Total Courses</small>
+                    <h3 class="fw-bold mt-2 mb-0" th:text="${totalCourses != null ? totalCourses : 0}">0</h3>
+                    <i class="fas fa-book position-absolute end-0 bottom-0 m-3 text-success opacity-25 fa-3x" style="transform: rotate(-10deg);"></i>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100 border-start border-info border-4 position-relative overflow-hidden">
+                    <small class="text-info fw-bold text-uppercase">Active Settings</small>
+                    <h3 class="fw-bold mt-2 mb-0" th:text="${activeSettings != null ? activeSettings : 0}">0</h3>
+                    <i class="fas fa-cogs position-absolute end-0 bottom-0 m-3 text-info opacity-25 fa-3x" style="transform: rotate(-10deg);"></i>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100 border-start border-warning border-4 position-relative overflow-hidden">
+                    <small class="text-warning fw-bold text-uppercase">Published Courses</small>
+                    <h3 class="fw-bold mt-2 mb-0" th:text="${publishedCourses != null ? publishedCourses : 0}">0</h3>
+                    <i class="fas fa-check-circle position-absolute end-0 bottom-0 m-3 text-warning opacity-25 fa-3x" style="transform: rotate(-10deg);"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold mb-0"><i class="fas fa-book-open text-purple me-2"></i>Recently Added Courses</h5>
+                        <a th:href="@{/admin/courses}" class="small text-decoration-none btn btn-sm btn-light rounded-pill px-3">View All</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                            <tr class="small text-muted text-uppercase">
+                                <th>Course Title</th>
+                                <th>Instructor</th>
+                                <th class="text-end">Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="course : ${recentCourses}">
+                                <td>
+                                    <div class="fw-bold small text-dark" th:text="${course.title}">Title</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;" th:text="${course.category?.name}">Category</div>
+                                </td>
+                                <td class="small" th:text="${course.instructor?.fullName}">Instructor Name</td>
+                                <td class="text-end">
+                                    <span class="badge rounded-pill bg-success-subtle text-success px-3 py-1" th:text="${course.status}">Status</span>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(recentCourses)}">
+                                <td colspan="3" class="text-center py-4 text-muted small">No courses found.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h5 class="fw-bold mb-0"><i class="fas fa-user-plus text-primary me-2"></i>Recently Registered Users</h5>
+                        <a th:href="@{/admin/users}" class="small text-decoration-none btn btn-sm btn-light rounded-pill px-3">View All</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="table-light">
+                            <tr class="small text-muted text-uppercase">
+                                <th>User Info</th>
+                                <th>Role</th>
+                                <th class="text-end">Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr th:each="u : ${recentUsers}">
+                                <td>
+                                    <div class="fw-bold small text-dark" th:text="${u.fullName}">User Name</div>
+                                    <div class="text-muted" style="font-size: 0.75rem;" th:text="${u.email}">email@example.com</div>
+                                </td>
+                                <td>
+                                    <span class="badge rounded-pill bg-primary bg-opacity-10 text-primary px-3" th:text="${u.role}">ROLE</span>
+                                </td>
+                                <td class="text-end">
+                                    <span th:classappend="${u.status.name() == 'ACTIVE' ? 'badge bg-success-subtle text-success' : 'badge bg-secondary-subtle text-secondary'}"
+                                          class="badge rounded-pill px-3" th:text="${u.status}">ACTIVE</span>
+                                </td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(recentUsers)}">
+                                <td colspan="3" class="text-center py-4 text-muted small">No recent users.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
 </html>

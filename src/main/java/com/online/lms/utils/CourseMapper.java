@@ -12,10 +12,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-/**
- * Utility class for mapping between Course-related Entities and DTOs.
- * Keeps mapper logic separate from Service layer (SRP).
- */
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class CourseMapper {
 
@@ -28,6 +25,7 @@ public final class CourseMapper {
                 .categoryName(c.getCategory() != null ? c.getCategory().getName() : "—")
                 .categoryId(c.getCategory() != null ? c.getCategory().getId() : null)
                 .instructorName(c.getInstructor() != null ? c.getInstructor().getFullName() : "—")
+                .instructorEmail(c.getInstructor() != null ? c.getInstructor().getEmail() : null)
                 .listedPrice(c.getListedPrice())
                 .salePrice(c.getSalePrice())
                 .duration(c.getDuration())
@@ -80,6 +78,8 @@ public final class CourseMapper {
                 .status(l.getStatus())
                 .orderIndex(l.getOrderIndex())
                 .chapterId(l.getChapter().getId())
+                .contentFilePath(l.getContentFilePath())
+                .previewEnabled(l.getPreviewEnabled() != null && l.getPreviewEnabled())
                 .build();
     }
 }

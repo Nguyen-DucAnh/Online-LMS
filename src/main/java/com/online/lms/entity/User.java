@@ -1,5 +1,12 @@
 package com.online.lms.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 
 import com.online.lms.enums.UserRole;
@@ -25,7 +32,7 @@ public class User extends BaseEntity {
     @Column(name = "email", unique = true, nullable = false, length = 150)
     private String email;
 
-    @Column(name = "password", nullable = false)
+    @Column(name = "password", nullable = false, length = 255)
     private String password;
 
     @Column(name = "PhoneNumber")
@@ -56,5 +63,12 @@ public class User extends BaseEntity {
 
     @Column(name = "OtpExpiry")
     private java.time.LocalDateTime otpExpiry;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Course> courses;
+
+    public boolean isDeletable() {
+        return instructedCourses == null || instructedCourses.isEmpty();
+    }
 
 }

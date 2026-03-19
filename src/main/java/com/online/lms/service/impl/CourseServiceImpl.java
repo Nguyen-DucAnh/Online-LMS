@@ -48,8 +48,7 @@ public class CourseServiceImpl implements CourseService {
     public Page<CourseListItemDTO> searchPublished(String keyword, Long categoryId,
                                                     CourseLevel level, Pageable pageable) {
         String kw = (keyword != null && !keyword.isBlank()) ? keyword.trim() : null;
-        return courseRepository.searchPublished(kw, categoryId, level, pageable)
-                .map(CourseMapper::toListItemDTO);
+        return null;
     }
 
     @Override

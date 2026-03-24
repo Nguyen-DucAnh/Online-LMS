@@ -29,7 +29,7 @@ import java.util.List;
 
 @Slf4j
 @Controller
-@RequestMapping(value = {"/admin/enrollments", "/manager/enrollments"})
+@RequestMapping("/admin/enrollments")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
 public class AdminEnrollmentController {

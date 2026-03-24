@@ -5,6 +5,7 @@ import com.online.lms.dto.chapter.LessonDTO;
 import com.online.lms.dto.course.CourseListItemDTO;
 import com.online.lms.entity.Course;
 import com.online.lms.enums.CourseStatus;
+import com.online.lms.exceptions.ResourceNotFoundException;
 import com.online.lms.service.CategoryService;
 import com.online.lms.service.CourseContentService;
 import com.online.lms.service.CourseService;
@@ -14,11 +15,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
@@ -53,9 +57,29 @@ public class CourseViewerController {
     }
 
     @GetMapping("/courses/{id}")
-    public String viewCourseDetail(@PathVariable Long id, Model model) {
+    public String viewCourseDetail(@PathVariable Long id, Model model,
+                                   RedirectAttributes redirectAttributes) {
         log.info("Hits GET /courses/{}", id);
-        Course course = courseService.findById(id);
+        Course course;
+        try {
+            course = courseService.findById(id);
+        } catch (ResourceNotFoundException e) {
+            redirectAttributes.addFlashAttribute("error", "Không tìm thấy khóa học.");
+            return "redirect:/courses";
+        }
+
+        // Block UNPUBLISHED courses for regular users
+        if (course.getStatus() != CourseStatus.PUBLISHED) {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            boolean isAdminOrManager = auth != null && auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")
+                            || a.getAuthority().equals("ROLE_MANAGER"));
+            if (!isAdminOrManager) {
+                redirectAttributes.addFlashAttribute("error", "Khóa học này chưa được phát hành.");
+                return "redirect:/courses";
+            }
+        }
+
         List<ChapterDTO> chapters = courseContentService.findActiveChaptersByCourse(id);
 
         model.addAttribute("course", course);

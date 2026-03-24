@@ -2,7 +2,9 @@ package com.online.lms.dto.chapter;
 
 
 import com.online.lms.enums.LessonType;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
@@ -21,8 +23,10 @@ public class LessonDTO {
 
     private String content;
 
+    @NotNull(message = "Vui lòng chọn loại bài học")
     private LessonType type;
 
+    @Min(value = 0, message = "Thời lượng không được âm")
     private Integer duration;
 
     private Boolean status;

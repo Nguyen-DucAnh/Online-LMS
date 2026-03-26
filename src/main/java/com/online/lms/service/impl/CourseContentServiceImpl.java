@@ -187,8 +187,6 @@ public class CourseContentServiceImpl implements CourseContentService {
         return lesson;
     }
 
-    // ===== Private helpers =====
-
     private Chapter getChapterOrThrow(Long id) {
         return chapterRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy chương id=" + id));

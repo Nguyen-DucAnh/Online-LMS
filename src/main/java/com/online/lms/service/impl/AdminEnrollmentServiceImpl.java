@@ -38,8 +38,6 @@ public class AdminEnrollmentServiceImpl implements AdminEnrollmentService {
     private final CourseRepository     courseRepository;
     private final UserRepository       userRepository;
 
-    // ── List ──────────────────────────────────────────────────────────────────
-
     @Override
     public Page<EnrollmentListItemDTO> findAll(Long courseId, Long userId,
                                                EnrollmentStatus status, String keyword,

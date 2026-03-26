@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::title}, ~{::section})}">
+
+<head>
+    <title th:text="${success} ? 'Thanh toán thành công | Online LMS' : 'Thanh toán thất bại | Online LMS'">Kết quả thanh toán</title>
+</head>
+
+<body>
+<section>
+    <div class="container py-5" style="max-width: 600px;">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden text-center">
+
+            <!-- Success header -->
+            <div th:if="${success}"
+                 class="card-header py-5 border-0"
+                 style="background: linear-gradient(135deg, #10b981, #059669);">
+                <div class="mb-3">
+                    <i class="fas fa-check-circle fa-4x text-white"></i>
+                </div>
+                <h4 class="fw-bold text-white mb-1">Thanh toán thành công!</h4>
+                <p class="text-white-50 small mb-0">Giao dịch của bạn đã được xử lý thành công.</p>
+            </div>
+
+            <!-- Failure header -->
+            <div th:unless="${success}"
+                 class="card-header py-5 border-0"
+                 style="background: linear-gradient(135deg, #ef4444, #b91c1c);">
+                <div class="mb-3">
+                    <i class="fas fa-times-circle fa-4x text-white"></i>
+                </div>
+                <h4 class="fw-bold text-white mb-1">Thanh toán thất bại</h4>
+                <p class="text-white-50 small mb-0"
+                   th:text="${vnpayResult.message}">Lỗi không xác định</p>
+            </div>
+
+            <div class="card-body p-4">
+                <!-- Transaction details table -->
+                <table class="table table-sm table-borderless text-start mx-auto" style="max-width:400px;">
+                    <tr th:if="${vnpayResult.txnRef}">
+                        <td class="text-muted small">Mã giao dịch</td>
+                        <td class="fw-semibold small" th:text="${vnpayResult.txnRef}"></td>
+                    </tr>
+                    <tr th:if="${vnpayResult.transactionNo}">
+                        <td class="text-muted small">Mã VNPay</td>
+                        <td class="fw-semibold small" th:text="${vnpayResult.transactionNo}"></td>
+                    </tr>
+                    <tr th:if="${vnpayResult.amount}">
+                        <td class="text-muted small">Số tiền</td>
+                        <td class="fw-semibold small"
+                            th:text="${#numbers.formatDecimal(vnpayResult.amount, 1, 'COMMA', 0, 'POINT') + ' VNĐ'}"></td>
+                    </tr>
+                    <tr th:if="${vnpayResult.bankCode}">
+                        <td class="text-muted small">Ngân hàng</td>
+                        <td class="fw-semibold small" th:text="${vnpayResult.bankCode}"></td>
+                    </tr>
+                    <tr th:if="${vnpayResult.payDate}">
+                        <td class="text-muted small">Thời gian</td>
+                        <td class="fw-semibold small" th:text="${vnpayResult.payDate}"></td>
+                    </tr>
+                </table>
+
+                <!-- Info note -->
+                <div class="alert alert-success small mt-3 text-start" th:if="${success}">
+                    <i class="fas fa-check-circle me-1"></i>
+                    Thanh toán thành công! Khóa học của bạn đã được <strong>mở khóa</strong>. Bạn có thể bắt đầu học ngay bây giờ.
+                </div>
+                <div class="alert alert-warning small mt-3 text-start" th:unless="${success}">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    Thanh toán chưa hoàn tất. Đơn đăng ký vẫn được lưu <strong>Chờ duyệt</strong>.
+                    Bạn có thể thử lại hoặc liên hệ admin.
+                </div>
+
+                <!-- CTA buttons -->
+                <div class="d-flex justify-content-center gap-3 mt-4">
+                    <!-- Success: go learn immediately -->
+                    <a th:if="${success and courseId != null}"
+                       th:href="@{/courses/{id}(id=${courseId})}"
+                       class="btn btn-success rounded-pill px-5 fw-bold">
+                        <i class="fas fa-play me-2"></i>Vào học ngay
+                    </a>
+                    <!-- Fallback if courseId is null -->
+                    <a th:if="${success and courseId == null}"
+                       href="/my-courses"
+                       class="btn btn-success rounded-pill px-5 fw-bold">
+                        <i class="fas fa-play me-2"></i>Vào khóa học
+                    </a>
+                    <!-- Failure: retry -->
+                    <a th:unless="${success}"
+                       href="/my-enrollments"
+                       class="btn btn-warning rounded-pill px-4">
+                        <i class="fas fa-redo me-2"></i>Thử lại thanh toán
+                    </a>
+                    <a href="/courses" class="btn btn-outline-secondary rounded-pill px-4">
+                        <i class="fas fa-search me-2"></i>Khám phá thêm
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

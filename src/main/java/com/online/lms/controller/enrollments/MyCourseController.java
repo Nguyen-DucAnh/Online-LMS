@@ -15,18 +15,6 @@ public class MyCourseController {
 
     private final EnrollmentService enrollmentService;
 
-    /**
-     * GET /my-courses
-     *
-     * Chỉ MEMBER và MANAGER truy cập.
-     * ADMIN dùng /admin/enrollments để quản lý.
-     *
-     * Template: templates/my-courses.html
-     * Model attribute: "courses" → List<MyCourseDTO>
-     *
-     * Lưu ý: template dùng biến "courses" (không phải "enrollments")
-     * khớp với my-courses.html của team: th:each="course : ${courses}"
-     */
     @GetMapping("/my-courses")
     @PreAuthorize("hasAnyRole('MEMBER', 'MANAGER', 'ADMIN')")
     public String myCourses(Model model) {

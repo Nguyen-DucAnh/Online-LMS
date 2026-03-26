@@ -30,9 +30,6 @@ public class FileStorageService {
         }
     }
 
-    /**
-     * Store file and return path for serving (e.g. /uploads/videos/xxx.mp4).
-     */
     public String store(MultipartFile file, String subFolder) {
         if (file == null || file.isEmpty()) {
             return null;

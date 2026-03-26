@@ -16,9 +16,6 @@ import java.util.Optional;
 @Repository
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
-    // ── My Enrollments ────────────────────────────────────────────────────────
-
-    // List → ORDER BY trong JPQL được phép (không có Pageable)
     @Query("""
         SELECT e FROM Enrollment e
         JOIN FETCH e.course c
@@ -28,9 +25,7 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
         """)
     List<Enrollment> findAllByUserIdOrderByEnrollDateDesc(@Param("userId") Long userId);
 
-    // ── My Courses (APPROVED only) ────────────────────────────────────────────
 
-    // List → ORDER BY trong JPQL được phép
     @Query("""
         SELECT e FROM Enrollment e
         JOIN FETCH e.course c
@@ -41,8 +36,6 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
         ORDER BY e.enrollDate DESC
         """)
     List<Enrollment> findApprovedByUserId(@Param("userId") Long userId);
-
-    // ── Access control ────────────────────────────────────────────────────────
 
     boolean existsByUser_IdAndCourse_IdAndStatus(Long userId, Long courseId, EnrollmentStatus status);
 
@@ -58,9 +51,6 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     Optional<Enrollment> findApprovedByIdAndUserId(@Param("enrollmentId") Long enrollmentId,
                                                    @Param("userId") Long userId);
 
-    // ── Admin: Enrollment List ────────────────────────────────────────────────
-    // QUAN TRỌNG: KHÔNG có ORDER BY trong JPQL khi dùng Pageable
-    // Sort được truyền vào qua Pageable từ controller → Spring Data tự thêm
     @Query(value = """
         SELECT e FROM Enrollment e
         JOIN FETCH e.course c
@@ -104,8 +94,6 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
             @Param("keyword")  String keyword,
             Pageable pageable);
 
-    // ── Manager: chỉ thấy course của mình ────────────────────────────────────
-    // QUAN TRỌNG: KHÔNG có ORDER BY trong JPQL khi dùng Pageable
     @Query(value = """
         SELECT e FROM Enrollment e
         JOIN FETCH e.course c
@@ -149,7 +137,6 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
             @Param("keyword")      String keyword,
             Pageable pageable);
 
-    // ── Enrollment Details ────────────────────────────────────────────────────
 
     @Query("""
         SELECT e FROM Enrollment e
@@ -161,8 +148,6 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
         """)
     Optional<Enrollment> findByIdWithDetails(@Param("id") Long id);
 
-    // ── Manager access check ──────────────────────────────────────────────────
-
     @Query("""
         SELECT CASE WHEN COUNT(e) > 0 THEN TRUE ELSE FALSE END
         FROM Enrollment e
@@ -172,8 +157,6 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     boolean existsByIdAndInstructorId(
             @Param("enrollmentId") Long enrollmentId,
             @Param("instructorId") Long instructorId);
-
-    // ── Export (List không Pageable → ORDER BY được phép) ────────────────────
 
     @Query("""
         SELECT e FROM Enrollment e

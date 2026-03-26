@@ -98,7 +98,6 @@ public class CourseServiceImpl implements CourseService {
             course.setThumbnail(dto.getThumbnail());
         }
 
-        // Only Admin can change price and status
         if (currentUser.getRole() == UserRole.ADMIN) {
             course.setListedPrice(dto.getListedPrice());
             course.setSalePrice(dto.getSalePrice());
@@ -112,7 +111,6 @@ public class CourseServiceImpl implements CourseService {
         course.setFeatured(Boolean.TRUE.equals(dto.getFeatured()));
         course.setCategory(getCategoryOrThrow(dto.getCategoryId()));
 
-        // Only Admin can change instructor
         if (currentUser.getRole() == UserRole.ADMIN) {
             course.setInstructor(dto.getInstructorId() != null ? getUserOrThrow(dto.getInstructorId()) : null);
         }
@@ -140,16 +138,13 @@ public class CourseServiceImpl implements CourseService {
     @Transactional
     public void deleteById(Long id) {
         Course course = getCourseOrThrow(id);
-        // Requirement: Only new course (not related to any system transactions) can be deleted
-        // Based on entities, checking if course is linked to any student (user_id field)
+
         if (course.getUser() != null) {
             throw new RuntimeException("Cannot delete course that has been enrolled by students!");
         }
         courseRepository.delete(course);
         log.info("Course deleted: id={}", id);
     }
-
-    // ===== Private helpers =====
 
     private User getCurrentUser() {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/layout :: layout(~{::title}, ~{::section})}">
+
+<head>
+    <title th:text="'Đăng ký: ' + ${course.title} + ' | Online LMS'">Đăng ký khóa học</title>
+</head>
+
+<body>
+<section>
+    <div class="container py-5" style="max-width: 720px;">
+
+        <!-- Breadcrumb -->
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/courses" class="text-decoration-none">Courses</a></li>
+                <li class="breadcrumb-item">
+                    <a th:href="@{/courses/{id}(id=${course.id})}" class="text-decoration-none"
+                       th:text="${course.title}">Course</a>
+                </li>
+                <li class="breadcrumb-item active">Đăng ký</li>
+            </ol>
+        </nav>
+
+        <!-- Flash messages -->
+        <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            <span th:text="${errorMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Card -->
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+            <!-- Course info banner -->
+            <div class="card-header text-white py-4 px-4" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
+                <div class="d-flex align-items-center gap-3">
+                    <img th:src="${course.thumbnail != null ? course.thumbnail : 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=200'}"
+                         alt="thumbnail" class="rounded-3 flex-shrink-0"
+                         style="width: 72px; height: 54px; object-fit: cover;">
+                    <div>
+                        <h5 class="mb-1 fw-bold" th:text="${course.title}">Course Title</h5>
+                        <div class="d-flex gap-3 small text-white-50">
+                            <span><i class="fas fa-user-tie me-1"></i>
+                                <span th:text="${course.instructor != null ? course.instructor.fullName : 'N/A'}"></span>
+                            </span>
+                            <span><i class="fas fa-signal me-1"></i>
+                                <span th:text="${course.level != null ? course.level.name() : ''}"></span>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="ms-auto text-end">
+                        <div class="fw-bold fs-4"
+                             th:text="${course.salePrice != null && course.salePrice.compareTo(0) > 0 ? '$' + course.salePrice : 'Miễn phí'}">$0</div>
+                        <small class="text-white-50">Học phí</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4">
+                    <i class="fas fa-file-signature me-2 text-primary"></i>Thông tin đăng ký
+                </h5>
+
+                <form th:action="@{/enroll/{courseId}(courseId=${course.id})}"
+                      th:object="${enrollmentForm}" method="post" novalidate>
+
+                    <div class="row g-3">
+                        <!-- Full Name -->
+                        <div class="col-md-6">
+                            <label for="fullName" class="form-label fw-semibold">
+                                Họ và tên <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" id="fullName" class="form-control"
+                                   th:field="*{fullName}"
+                                   th:classappend="${#fields.hasErrors('fullName')} ? 'is-invalid'"
+                                   placeholder="Nguyễn Văn A">
+                            <div class="invalid-feedback" th:errors="*{fullName}"></div>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="col-md-6">
+                            <label for="email" class="form-label fw-semibold">
+                                Email <span class="text-danger">*</span>
+                            </label>
+                            <input type="email" id="email" class="form-control"
+                                   th:field="*{email}"
+                                   th:classappend="${#fields.hasErrors('email')} ? 'is-invalid'"
+                                   placeholder="example@email.com">
+                            <div class="invalid-feedback" th:errors="*{email}"></div>
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="col-md-6">
+                            <label for="phone" class="form-label fw-semibold">Số điện thoại</label>
+                            <input type="tel" id="phone" class="form-control"
+                                   th:field="*{phone}" placeholder="0912 345 678">
+                            <div class="invalid-feedback" th:errors="*{phone}"></div>
+                        </div>
+
+                        <!-- Payment Method -->
+                        <div class="col-12">
+                            <label class="form-label fw-semibold">Phương thức thanh toán</label>
+                            <div class="d-flex flex-wrap gap-3 pt-1">
+
+                                <!-- Chuyển khoản -->
+                                <label class="payment-option d-flex align-items-center gap-2 border rounded-3 px-3 py-2 cursor-pointer"
+                                       style="cursor:pointer; transition: all .2s;"
+                                       id="label-BANK_TRANSFER">
+                                    <input class="form-check-input m-0" type="radio"
+                                           th:field="*{paymentMethod}" value="BANK_TRANSFER"
+                                           onchange="onPaymentChange(this)">
+                                    <i class="fas fa-university text-primary"></i>
+                                    <span>Chuyển khoản</span>
+                                </label>
+
+                                <!-- Internet Banking -->
+                                <label class="payment-option d-flex align-items-center gap-2 border rounded-3 px-3 py-2"
+                                       style="cursor:pointer; transition: all .2s;"
+                                       id="label-INTERNET_BANKING">
+                                    <input class="form-check-input m-0" type="radio"
+                                           th:field="*{paymentMethod}" value="INTERNET_BANKING"
+                                           onchange="onPaymentChange(this)">
+                                    <i class="fas fa-globe text-success"></i>
+                                    <span>Internet Banking</span>
+                                </label>
+
+                                <!-- VNPay -->
+                                <label class="payment-option d-flex align-items-center gap-2 border rounded-3 px-3 py-2"
+                                       style="cursor:pointer; transition: all .2s;"
+                                       id="label-VNPAY">
+                                    <input class="form-check-input m-0" type="radio"
+                                           th:field="*{paymentMethod}" value="VNPAY"
+                                           onchange="onPaymentChange(this)">
+                                    <img src="https://vnpay.vn/s1/statics/img/logo-vnpay-2.png"
+                                         alt="VNPay" style="height:20px; object-fit:contain;">
+                                    <span class="fw-semibold text-danger">VNPay</span>
+                                </label>
+
+                            </div>
+                        </div>
+
+                        <!-- Enroll Note -->
+                        <div class="col-12">
+                            <label for="enrollNote" class="form-label fw-semibold">Ghi chú đăng ký</label>
+                            <textarea id="enrollNote" class="form-control" rows="3"
+                                      th:field="*{enrollNote}"
+                                      placeholder="Mục tiêu học tập, câu hỏi, hoặc thông tin thêm..."></textarea>
+                            <div class="invalid-feedback" th:errors="*{enrollNote}"></div>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic note based on payment method -->
+                    <div class="alert alert-info mt-3 mb-0 small" id="noteManual">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Sau khi đăng ký, admin sẽ xét duyệt và gửi thông tin thanh toán.
+                        Khóa học sẽ được mở ngay sau khi được duyệt.
+                    </div>
+                    <div class="alert alert-warning mt-3 mb-0 small d-none" id="noteVnpay">
+                        <i class="fas fa-credit-card me-1"></i>
+                        Bạn sẽ được chuyển sang trang thanh toán <strong>VNPay</strong> sau khi xác nhận.
+                        Khóa học sẽ mở sau khi admin duyệt.
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="d-flex gap-2 mt-4">
+                        <a th:href="@{/courses/{id}(id=${course.id})}"
+                           class="btn btn-outline-secondary rounded-pill px-4">
+                            <i class="fas fa-arrow-left me-2"></i>Quay lại
+                        </a>
+                        <button type="submit" id="submitBtn" class="btn btn-primary rounded-pill px-5 ms-auto">
+                            <i class="fas fa-paper-plane me-2" id="submitIcon"></i>
+                            <span id="submitText">Đăng ký ngay</span>
+                        </button>
+                    </div>
+
+                    <script>
+                        function onPaymentChange(radio) {
+                            // Highlight selected label
+                            document.querySelectorAll('.payment-option').forEach(l => {
+                                l.classList.remove('border-primary', 'border-danger', 'bg-light');
+                            });
+                            const lbl = document.getElementById('label-' + radio.value);
+                            if (lbl) {
+                                lbl.classList.add(radio.value === 'VNPAY' ? 'border-danger' : 'border-primary', 'bg-light');
+                            }
+
+                            // Show/hide notes and change button
+                            const isVNPay = radio.value === 'VNPAY';
+                            document.getElementById('noteManual').classList.toggle('d-none', isVNPay);
+                            document.getElementById('noteVnpay').classList.toggle('d-none', !isVNPay);
+                            document.getElementById('submitText').textContent = isVNPay ? 'Thanh toán với VNPay' : 'Xác nhận đăng ký';
+                            document.getElementById('submitBtn').className = isVNPay
+                                ? 'btn btn-danger rounded-pill px-5 ms-auto'
+                                : 'btn btn-primary rounded-pill px-5 ms-auto';
+                            document.getElementById('submitIcon').className = isVNPay
+                                ? 'fas fa-credit-card me-2'
+                                : 'fas fa-paper-plane me-2';
+                        }
+
+                        // Init on load if a radio is pre-selected
+                        document.addEventListener('DOMContentLoaded', function () {
+                            const checked = document.querySelector('input[name="paymentMethod"]:checked');
+                            if (checked) onPaymentChange(checked);
+                        });
+                    </script>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</section>
+</body>
+</html>

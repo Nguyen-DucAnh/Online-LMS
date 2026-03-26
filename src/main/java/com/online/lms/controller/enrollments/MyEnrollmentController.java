@@ -15,17 +15,6 @@ public class MyEnrollmentController {
 
     private final EnrollmentService enrollmentService;
 
-    /**
-     * GET /my-enrollments
-     * Chỉ MEMBER và MANAGER mới truy cập được.
-     * ADMIN không cần vì admin có Enrollment List riêng ở /admin/enrollments.
-     *
-     * NOTE cho SecurityConfig: cần thêm
-     *   .requestMatchers("/my-enrollments").authenticated()
-     * Hiện tại anyRequest().authenticated() đã cover — không cần thêm gì.
-     */
-
-
     @GetMapping("/my-enrollments")
     @PreAuthorize("hasAnyRole('MEMBER', 'MANAGER', 'ADMIN')")
     public String myEnrollments(Model model) {

@@ -5,10 +5,12 @@ import com.online.lms.dto.chapter.LessonDTO;
 import com.online.lms.dto.course.CourseListItemDTO;
 import com.online.lms.entity.Course;
 import com.online.lms.enums.CourseStatus;
+import com.online.lms.enums.EnrollmentStatus;
 import com.online.lms.exceptions.ResourceNotFoundException;
 import com.online.lms.service.CategoryService;
 import com.online.lms.service.CourseContentService;
 import com.online.lms.service.CourseService;
+import com.online.lms.service.EnrollmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -25,15 +27,17 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Controller
 @RequiredArgsConstructor
 public class CourseViewerController {
 
-    private final CourseService courseService;
-    private final CategoryService categoryService;
+    private final CourseService        courseService;
+    private final CategoryService      categoryService;
     private final CourseContentService courseContentService;
+    private final EnrollmentService    enrollmentService;
 
     @GetMapping({"/courses", "/course"})
     public String searchCourses(
@@ -68,7 +72,6 @@ public class CourseViewerController {
             return "redirect:/courses";
         }
 
-        // Block UNPUBLISHED courses for regular users
         if (course.getStatus() != CourseStatus.PUBLISHED) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             boolean isAdminOrManager = auth != null && auth.getAuthorities().stream()
@@ -82,17 +85,46 @@ public class CourseViewerController {
 
         List<ChapterDTO> chapters = courseContentService.findActiveChaptersByCourse(id);
 
+
+        String enrollmentStatus = "NONE";
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isLoggedIn = auth != null && auth.isAuthenticated()
+                && !auth.getPrincipal().equals("anonymousUser");
+        if (isLoggedIn) {
+            try {
+                Optional<EnrollmentStatus> status = enrollmentService.getExistingEnrollmentStatus(id);
+                enrollmentStatus = status.map(EnrollmentStatus::name).orElse("NONE");
+            } catch (Exception ignored) {
+            }
+        }
+
         model.addAttribute("course", course);
         model.addAttribute("chapters", chapters);
         model.addAttribute("currentPage", "courses");
+        model.addAttribute("enrollmentStatus", enrollmentStatus);
+        model.addAttribute("isLoggedIn", isLoggedIn);
 
         return "course-detail";
     }
 
     @GetMapping("/courses/{courseId}/lessons/{lessonId}")
     @PreAuthorize("hasAnyRole('MEMBER', 'MANAGER', 'ADMIN')")
-    public String viewLesson(@PathVariable Long courseId, @PathVariable Long lessonId, Model model) {
+    public String viewLesson(@PathVariable Long courseId, @PathVariable Long lessonId,
+                             Model model, RedirectAttributes ra) {
         log.info("Hits GET /courses/{}/lessons/{}", courseId, lessonId);
+
+        // Access control: check if user has APPROVED enrollment for this course
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdminOrManager = auth != null && auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")
+                        || a.getAuthority().equals("ROLE_MANAGER"));
+
+        if (!isAdminOrManager && !enrollmentService.hasAccessToCourse(courseId)) {
+            ra.addFlashAttribute("error",
+                    "Bạn cần đăng ký và được duyệt trước khi xem bài học này.");
+            return "redirect:/courses/" + courseId;
+        }
+
         Course course = courseService.findById(courseId);
         List<ChapterDTO> chapters = courseContentService.findActiveChaptersByCourse(courseId);
         LessonDTO currentLesson = courseContentService.findActiveLessonByCourseAndId(courseId, lessonId);

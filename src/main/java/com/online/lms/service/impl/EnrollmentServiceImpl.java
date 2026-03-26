@@ -1,5 +1,6 @@
 package com.online.lms.service.impl;
 
+import com.online.lms.dto.enrollment.EnrollmentRequestDTO;
 import com.online.lms.dto.enrollment.MyCourseDTO;
 import com.online.lms.dto.enrollment.MyEnrollmentDTO;
 import com.online.lms.entity.Course;
@@ -9,6 +10,7 @@ import com.online.lms.enums.EnrollmentStatus;
 import com.online.lms.exceptions.ResourceNotFoundException;
 import com.online.lms.repository.EnrollmentRepository;
 import com.online.lms.repository.UserRepository;
+import com.online.lms.service.CourseService;
 import com.online.lms.service.EnrollmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -27,8 +30,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository       userRepository;
-
-    // ─── My Enrollments ───────────────────────────────────────────────────────
+    private final CourseService        courseService;
 
     @Override
     public List<MyEnrollmentDTO> getMyEnrollments() {
@@ -42,8 +44,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 .toList();
     }
 
-    // ─── My Courses ───────────────────────────────────────────────────────────
-
     @Override
     public List<MyCourseDTO> getMyCourses() {
         User currentUser = getCurrentUser();
@@ -55,8 +55,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 .toList();
     }
 
-    // ─── Access control ───────────────────────────────────────────────────────
-
     @Override
     public boolean hasAccessToCourse(Long courseId) {
         User currentUser = getCurrentUser();
@@ -66,20 +64,60 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     public Long getApprovedCourseIdByEnrollmentId(Long enrollmentId) {
-                User currentUser = getCurrentUser();
-                Enrollment enrollment = enrollmentRepository
+        User currentUser = getCurrentUser();
+        Enrollment enrollment = enrollmentRepository
                 .findApprovedByIdAndUserId(enrollmentId, currentUser.getId())
-                                .orElseThrow(() -> new ResourceNotFoundException(
+                .orElseThrow(() -> new ResourceNotFoundException(
                         "Không tìm thấy enrollment đã duyệt id=" + enrollmentId));
-                return enrollment.getCourse().getId();
+        return enrollment.getCourse().getId();
+    }
+
+    @Override
+    @Transactional
+    public Long enroll(Long courseId, EnrollmentRequestDTO dto) {
+        User currentUser = getCurrentUser();
+        log.info("enroll - userId={}, courseId={}", currentUser.getId(), courseId);
+
+        // Check duplicate PENDING or APPROVED enrollment
+        Optional<Enrollment> existing = enrollmentRepository
+                .findByUser_IdAndCourse_Id(currentUser.getId(), courseId);
+        if (existing.isPresent()) {
+            EnrollmentStatus s = existing.get().getStatus();
+            if (s == EnrollmentStatus.PENDING) {
+                throw new IllegalStateException("Bạn đã đăng ký khóa học này và đang chờ duyệt.");
+            }
+            if (s == EnrollmentStatus.APPROVED) {
+                throw new IllegalStateException("Bạn đã được duyệt vào khóa học này.");
+            }
         }
 
-    // ─── Helpers ──────────────────────────────────────────────────────────────
+        Course course = courseService.findById(courseId);
 
-    /**
-     * Lấy user hiện tại — theo đúng pattern team:
-     * SecurityContextHolder → email → query DB.
-     */
+        Enrollment enrollment = Enrollment.builder()
+                .user(currentUser)
+                .course(course)
+                .fullName(dto.getFullName())
+                .email(dto.getEmail())
+                .phone(dto.getPhone())
+                .enrollNote(dto.getEnrollNote())
+                .paymentMethod(dto.getPaymentMethod())
+                .fee(course.getSalePrice() != null ? course.getSalePrice() : BigDecimal.ZERO)
+                .status(EnrollmentStatus.PENDING)
+                .build();
+
+        enrollmentRepository.save(enrollment);
+        log.info("Enrollment created id={}", enrollment.getId());
+        return enrollment.getId();
+    }
+
+    @Override
+    public Optional<EnrollmentStatus> getExistingEnrollmentStatus(Long courseId) {
+        User currentUser = getCurrentUser();
+        return enrollmentRepository
+                .findByUser_IdAndCourse_Id(currentUser.getId(), courseId)
+                .map(Enrollment::getStatus);
+    }
+
     private User getCurrentUser() {
         String email = SecurityContextHolder.getContext()
                 .getAuthentication().getName();
@@ -88,10 +126,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                         "Không tìm thấy người dùng: " + email));
     }
 
-    /**
-     * Map Enrollment entity → MyEnrollmentDTO.
-     * Tất cả relation đã được JOIN FETCH trong repository → không có lazy load ở đây.
-     */
     private MyEnrollmentDTO toMyEnrollmentDTO(Enrollment e) {
         Course c = e.getCourse();
         return MyEnrollmentDTO.builder()
@@ -111,17 +145,11 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 .build();
     }
 
-    /**
-     * Map Enrollment → MyCourseDTO.
-     *
-     * progressInt: cần là int để CSS width không bị "45.50%".
-     * completed  : true khi completedAt != null (hoặc progress == 100).
-     */
     private MyCourseDTO toMyCourseDTO(Enrollment e) {
         Course c = e.getCourse();
 
         BigDecimal progress = e.getProgress() != null ? e.getProgress() : BigDecimal.ZERO;
-        int progressInt = progress.intValue(); // VD: 45.50 → 45
+        int progressInt = progress.intValue();
         boolean completed = e.getCompletedAt() != null
                 || progress.compareTo(new BigDecimal("100")) >= 0;
 

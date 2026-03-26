@@ -38,12 +38,6 @@ public class AdminEnrollmentController {
     private final CourseService          courseService;
     private final UserService            userService;
 
-    // ── List ──────────────────────────────────────────────────────────────────
-
-    /**
-     * GET /admin/enrollments
-     * Admin: thấy tất cả | Manager: chỉ thấy course của mình
-     */
     @GetMapping
     public String list(
             @RequestParam(required = false) Long courseId,

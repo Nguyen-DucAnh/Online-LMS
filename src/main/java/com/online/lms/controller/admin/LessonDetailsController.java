@@ -83,7 +83,7 @@ public class LessonDetailsController {
         model.addAttribute("courseId", courseId);
         model.addAttribute("chapter", contentService.findChapterById(chapterId));
         model.addAttribute("lesson", lesson);
-        model.addAttribute("allLessonTypes", LessonType.values()); // Explicitly add
+        model.addAttribute("allLessonTypes", LessonType.values());
         model.addAttribute("currentPage", "courses");
         return "admin/lesson-details";
     }
@@ -111,7 +111,7 @@ public class LessonDetailsController {
             model.addAttribute("course", course);
             model.addAttribute("courseId", courseId);
             model.addAttribute("chapter", contentService.findChapterById(chapterId));
-            model.addAttribute("allLessonTypes", LessonType.values()); // Explicitly add
+            model.addAttribute("allLessonTypes", LessonType.values());
             model.addAttribute("currentPage", "courses");
             return "admin/lesson-details";
         }

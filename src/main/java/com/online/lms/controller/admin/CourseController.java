@@ -58,7 +58,6 @@ public class CourseController {
             try {
                 courseStatus = CourseStatus.valueOf(status);
             } catch (IllegalArgumentException e) {
-                // Ignore invalid status values, show all
             }
         }
 
@@ -102,8 +101,8 @@ public class CourseController {
         User currentUser = getCurrentUser(principal);
         if (currentUser.getRole() == UserRole.MANAGER) {
             dto.setInstructorId(currentUser.getId());
-            dto.setStatus(CourseStatus.UNPUBLISHED); // Managers create unpublished by default
-            dto.setListedPrice(null); // Will be handled in service to keep original or 0
+            dto.setStatus(CourseStatus.UNPUBLISHED);
+            dto.setListedPrice(null);
         }
 
         if (result.hasErrors()) {
@@ -144,7 +143,6 @@ public class CourseController {
             dto.setThumbnail(url);
         }
 
-        // Field restrictions for Managers are handled in CourseServiceImpl.update
         courseService.update(id, dto);
         redirectAttributes.addFlashAttribute("successMessage", "Cập nhật khóa học thành công!");
         return "redirect:/admin/courses";
@@ -164,8 +162,6 @@ public class CourseController {
         ra.addFlashAttribute("successMessage", "Đã xóa khóa học!");
         return "redirect:/admin/courses";
     }
-
-    // ===== Private helpers =====
 
     private User getCurrentUser(Principal principal) {
         return userRepository.findByEmail(principal.getName())

@@ -82,7 +82,8 @@ public class SecurityConfig {
                         .requestMatchers("/profile/**").authenticated()
                         .requestMatchers("/", "/login", "/perform-login", "/register",
                                 "/forgot-password", "/reset-password/**", "/verify-otp/**", "/resend-otp",
-                                "/css/**", "/js/**", "/images/**", "/output.css", "/uploads/**")
+                                "/css/**", "/js/**", "/images/**", "/output.css", "/uploads/**",
+                                "/payment/vnpay/return")   // VNPay return callback must be public
                         .permitAll()
                         .requestMatchers("/courses/{id}/lessons/**").hasAnyRole("ADMIN", "MANAGER", "MEMBER")
                         .requestMatchers("/courses/**").permitAll()
